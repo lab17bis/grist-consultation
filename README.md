@@ -1,0 +1,133 @@
+# grist-decision
+
+> **Widget-outil pour Grist, clé en main.** Il transforme un document Grist en espace de consultation au Système de design de l'État (DSFR) : l'équipe dépose des propositions (idées, réalisations à valoriser, questions, signaux de veille), les soutient ou les départage par un vote, et chacun voit la suite donnée à chaque proposition.
+
+Tout se règle dans Grist, sans toucher au code : en-tête et pied de page, types de propositions, suites possibles, et pour chaque consultation le mode de vote, l'étape, l'échéance et la visibilité des résultats. Le dépôt ne contient que le code : aucune donnée, aucune personne réelle.
+
+## À quoi ça sert
+
+| Besoin | Ce que l'outil permet |
+| --- | --- |
+| **Boîte à idées** | Dépôt permanent d'idées, soutien par l'équipe, réponse visible sur chaque idée (à l'étude, retenue, en cours, réalisée, non retenue) avec une explication |
+| **Valoriser des réalisations** | Un mur de réalisations avec image, description et lien, que l'équipe peut soutenir (« coups de cœur ») |
+| **Prioriser** | Vote par points (budget par personne, plafond par proposition) ou choix unique |
+| **Comparer des options** | Notation de 1 à 5 sur des critères pondérés, classement par moyenne pondérée et détail par critère |
+| **Rendre compte** | Classement, participation, impression ou PDF, copie du résultat pour un courriel |
+
+Chaque **consultation** a :
+
+- un **mode de vote** : *Soutien* (autant de propositions que l'on veut), *Vote par points*, *Choix unique* ou *Notation* ;
+- une **étape** : *Dépôt et vote*, *Dépôt seulement*, *Vote seulement* ou *Close*, et une échéance facultative qui la ferme automatiquement ;
+- une **visibilité des résultats** : *Toujours*, *Après avoir voté* ou *À la clôture* (pour éviter que les premiers votes influencent les suivants).
+
+Les propositions s'affichent par défaut dans un ordre au hasard, propre à chaque personne, pour ne pas avantager les premières déposées.
+
+Démonstration avec des données fictives (rien n'est enregistré) : <https://lab17bis.github.io/grist-decision/v1/>
+
+## Le brancher en 3 minutes
+
+1. **Créer un document Grist vide** (ou ouvrir un document existant).
+2. **Ajouter le widget** : *Ajouter › Ajouter une page › Personnalisé*, sur n'importe quelle table. Dans le panneau de droite, choisissez *URL personnalisée*, saisissez `https://lab17bis.github.io/grist-decision/v1/` et donnez l'**accès complet au document**.
+3. **Installer** : le widget propose *Créer les tables*, ou *Créer les tables avec un exemple fictif* pour essayer (sans votes). Il crée `Consultations`, `Propositions`, `Criteres`, `Votes` et `Votants` sans toucher aux tables existantes. À faire par un propriétaire du document.
+
+Invitez ensuite l'équipe dans le document (*Partager*) en **éditeur** : il faut pouvoir écrire pour déposer et voter. Une personne en lecture seule voit les propositions et les résultats, sans voter.
+
+Pour recueillir des propositions de personnes qui n'ont pas accès au document, branchez [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) sur la table `Propositions` : le vote reste réservé aux personnes connectées.
+
+## Le régler
+
+L'écran *Réglages* (lien en bas de page) regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
+
+Chaque consultation se règle dans son onglet *Gérer* : titre, question, présentation, mode de vote, étape, échéance, visibilité des résultats, points par personne, critères de notation et leur poids.
+
+## Modèle de données
+
+| Table | Colonnes |
+| --- | --- |
+| `Consultations` | `Titre`, `Question`, `Description`, `Mode` (choix), `Phase` (choix), `Echeance` (date), `Resultats` (choix), `Points` et `Max_par_proposition` (entiers, vote par points), `Config_decision` |
+| `Propositions` | `Consultation` (référence), `Titre`, `Description`, `Type` (choix), `Auteur`, `Structure`, `Lien`, `Image` (adresse d'une image), `Illustration` (pièce jointe), `Statut` (choix), `Suite` (explication de la suite donnée), `Masquee` (case à cocher), `Deposee_par` et `Deposee_le` (remplis par Grist à la création) |
+| `Criteres` | `Consultation` (référence), `Nom`, `Description`, `Poids` (nombre) |
+| `Votes` | `Consultation`, `Proposition`, `Critere` (références), `Valeur` (nombre), `Votant` et `Vote_le` (remplis par Grist à la création : `user.Email` et `NOW()`) |
+| `Votants` | `Email` et `Nom` (remplis par Grist à la création) |
+
+Les modes, étapes et visibilités sont utilisés par le code : ne les renommez pas. Pour retirer une proposition sans la supprimer (doublon, hors sujet), cochez `Masquee`.
+
+## Le reprendre et l'adapter
+
+- **L'utiliser tel quel** : ajoutez le widget dans Grist. Aucune installation n'est nécessaire.
+- **L'héberger chez vous** : copiez le dépôt (*Fork*), activez GitHub Pages ou déposez les fichiers sur un serveur web statique, puis changez l'adresse du widget dans Grist. Aucune compilation.
+- **Modifier le code** :
+
+| Dossier ou fichier | Rôle |
+| --- | --- |
+| `v1/` | Version stable figée, servie à l'adresse `…/v1/`. Ne pas modifier à la main. |
+| `outils/figer-version.sh` | Copie la version en cours dans `vN/`. |
+| `index.html`, `js/app.js`, `css/app.css` | L'application : consultations, propositions, votes, résultats, suites, réglages |
+| `commun/` | En-tête et pied de page configurables, communs aux outils `grist-*` |
+| `exemples/` | Jeu d'exemple inventé (`demo.json`, dates relatives « J+2 ») et ses illustrations |
+| `tests/` | Tests automatisés de l'interface : `python3 tests/test_decision.py` (Playwright) |
+| `vendor/dsfr/` | DSFR, embarqué pour ne dépendre d'aucun service externe |
+
+## Fonctionnement et sécurité
+
+- Le widget lit et écrit dans le document Grist avec les droits de la personne connectée. Il ne contourne aucune règle d'accès : si Grist refuse une écriture, le widget affiche le refus.
+- **Qui vote ?** Un widget ne connaît pas la personne connectée. À sa première visite, le widget ajoute une ligne à `Votants` : Grist y inscrit l'adresse et le nom de la personne, et le widget la relit. Chaque vote porte ensuite l'adresse de son auteur, inscrite par Grist (`user.Email`).
+- Les votes des collègues sont relus toutes les 30 secondes et à la demande (bouton *Actualiser*).
+- Les images déposées depuis le widget sont enregistrées comme pièces jointes du document Grist.
+
+## Limites
+
+- **Une consultation, pas un scrutin.** Les votes ne sont pas anonymes pour les propriétaires du document, qui voient la table `Votes`. Une personne qui a les droits d'édition peut aussi modifier cette table directement dans Grist. Pour masquer les votes individuels, ajoutez une règle d'accès Grist sur la table `Votes`. Pour une élection, utilisez un outil de vote dédié.
+- Dans un document public sans connexion, toutes les personnes anonymes partagent la même identité : le vote n'a pas de sens.
+- Une personne qui vote depuis deux navigateurs est reconnue grâce à son adresse ; le plafond de points est vérifié dans le widget, pas par Grist.
+- Aucun audit RGAA n'a été mené.
+
+## Version stable et version en cours
+
+Dans Grist, utilisez l'adresse de la **version stable** : `https://lab17bis.github.io/grist-decision/v1/`. Elle ne change que pour corriger un défaut, sans toucher aux tables ni aux réglages. Une évolution qui les modifie paraît sous une nouvelle adresse (`v2/`) : les documents déjà en service restent sur `v1/` tant que vous ne changez pas l'adresse du widget.
+
+L'adresse sans numéro (`https://lab17bis.github.io/grist-decision/`) suit la version en cours de développement. Elle sert à essayer les nouveautés ; ne l'utilisez pas pour un document en service.
+
+Pour figer une nouvelle version stable après des tests réussis : `sh outils/figer-version.sh 1` (ou `2` pour une version qui change les tables), puis publiez le dépôt.
+
+## Données partagées avec les autres outils
+
+Plusieurs outils de la même famille peuvent travailler dans un même document Grist. Ils suivent une règle commune pour ne pas dupliquer les données :
+
+- **Une seule table `Personnes`** par document. Colonne commune : `Nom`. Colonnes facultatives reconnues par tous : `Email` et `Structure` (référence à `Structures`). Un outil lit cette table si elle existe et la crée seulement si elle manque. Il n'y ajoute que ses propres colonnes.
+- **Une seule table `Structures`** pour les équipes, services ou établissements : `Nom`, `Sigle`, `Type`, `Parent` (structure de rattachement).
+- **Aucun outil ne supprime ni ne renomme** une table ou une colonne qu'il n'a pas créée.
+- **Les autres tables portent des noms propres à chaque outil**, pour éviter les collisions (par exemple `Actions` pour grist-projet, `Actions_reunion` pour grist-decision). Les réglages sont rangés dans la description d'une colonne technique propre à l'outil (`Config_…`).
+- **Identifier la personne connectée** : un widget ne connaît pas l'adresse de la personne connectée. Les colonnes « créé par » utilisent une formule `user.Email` calculée à la création. Seul un outil qui doit relier la personne connectée à sa fiche crée la table `Comptes`.
+
+Ce que fait cet outil : il ne crée ni ne lit de table de personnes. Pour savoir qui vote, il utilise sa propre table `Votants` (adresse et nom remplis par Grist, une ligne par personne venue voter) : elle n'est pas reliée à `Personnes`.
+
+## Espaces clés en main
+
+Ce widget est assemblé, avec d'autres, dans [espace-contributions](https://github.com/lab17bis/espace-contributions) : boîte à idées, valorisation des réalisations des équipes, votes et suivi des suites données. Il peut aussi être ajouté à n'importe quel espace existant (une page « Consultations »), par exemple pour faire prioriser l'équipe dans [espace-pilotage](https://github.com/lab17bis/espace-pilotage) ou trancher entre des options dans [espace-collaboratif](https://github.com/lab17bis/espace-collaboratif).
+
+## Autres outils de la même famille
+
+- [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) : questionnaires au DSFR avec logique conditionnelle.
+- [grist-catalogue](https://github.com/lab17bis/grist-catalogue) : catalogue public de fiches au DSFR.
+- [grist-graphique](https://github.com/lab17bis/grist-graphique) : tableaux de bord et graphiques au DSFR.
+- [grist-projet](https://github.com/lab17bis/grist-projet) : espace d'équipe pour gérer des projets.
+- [grist-management](https://github.com/lab17bis/grist-management) : écran de management visuel d'équipe, qui affiche aussi la prochaine réunion et les actions ouvertes.
+
+Ils partagent les mêmes réglages d'en-tête et de pied de page.
+
+## Écosystème
+
+- **[Grist](https://grist.numerique.gouv.fr)** : tableur-base de données libre ([gristlabs/grist-core](https://github.com/gristlabs/grist-core)), proposé aux agents publics par la [DINUM](https://www.numerique.gouv.fr/) dans [La Suite numérique](https://lasuite.numerique.gouv.fr/).
+- **[Système de design de l'État (DSFR)](https://www.systeme-de-design.gouv.fr/)** ([GouvernementFR/dsfr](https://github.com/GouvernementFR/dsfr)). Son usage est réservé aux sites des services de l'État.
+- **[Communauté Grist francophone](https://forum.grist.libre.sh/)**.
+
+## Mots-clés
+
+Grist, widget Grist, widget-outil, consultation, boîte à idées, budget participatif, vote, vote par points, choix unique, notation multicritère, priorisation, aide à la décision, valorisation, réalisations, innovation participative, DSFR, Système de design de l'État, La Suite numérique, DINUM, service public, clé en main, logiciel libre.
+
+## Licence
+
+Code sous licence MIT (voir `LICENSE`). Le DSFR embarqué dans `vendor/dsfr/` conserve sa propre licence. Réutilisation, adaptation et contributions bienvenues.
+
+Conçu par le Lab 17 bis, laboratoire d'innovation publique de l'académie de Reims. Contact : <lab17bis@ac-reims.fr>
