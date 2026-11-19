@@ -1,0 +1,2158 @@
+{
+ "Consultations": [
+  {
+   "id": 1,
+   "Titre": "Nos réussites de l'année",
+   "Question": "De quelle réalisation de votre équipe êtes-vous fiers ?",
+   "Description": "Partagez un projet, une action ou une petite victoire qui mérite d'être connue. Soutenez les réalisations qui vous inspirent : les plus soutenues seront présentées à la rencontre de juin.",
+   "Mode": "Soutien",
+   "Phase": "Dépôt et vote",
+   "Resultats": "Toujours",
+   "Echeance": "J+30"
+  },
+  {
+   "id": 2,
+   "Titre": "Boîte à idées de l'équipe",
+   "Question": "Qu'est-ce qui simplifierait notre travail au quotidien ?",
+   "Description": "Déposez vos idées à tout moment. L'équipe de direction les étudie chaque mois et indique la suite donnée à chacune.",
+   "Mode": "Soutien",
+   "Phase": "Dépôt et vote",
+   "Resultats": "Après avoir voté"
+  },
+  {
+   "id": 3,
+   "Titre": "Priorités du prochain semestre",
+   "Question": "Sur quoi concentrer nos efforts ?",
+   "Description": "Vous disposez de 5 points à répartir, 3 au plus sur une même priorité. Les résultats seront connus à la clôture.",
+   "Mode": "Vote par points",
+   "Phase": "Vote seulement",
+   "Resultats": "À la clôture",
+   "Points": 5,
+   "Max_par_proposition": 3,
+   "Echeance": "J+10"
+  },
+  {
+   "id": 4,
+   "Titre": "Choix d'un outil de prise de notes partagée",
+   "Question": "Quel outil retenir pour nos réunions ?",
+   "Description": "Trois outils ont été testés pendant un mois. Notez-les selon les critères ci-dessous.",
+   "Mode": "Notation",
+   "Phase": "Vote seulement",
+   "Resultats": "Toujours"
+  },
+  {
+   "id": 5,
+   "Titre": "Thème de la journée d'équipe",
+   "Question": "Quel thème pour la journée de rentrée ?",
+   "Mode": "Choix unique",
+   "Phase": "Close",
+   "Resultats": "Toujours",
+   "Echeance": "J-20"
+  }
+ ],
+ "Propositions": [
+  {
+   "id": 1,
+   "Consultation": 1,
+   "Titre": "Un jardin pédagogique créé avec les élèves",
+   "Description": "Les élèves de 5e ont conçu et planté un jardin dans la cour. Il sert aujourd'hui aux cours de sciences et de mathématiques, et les familles ont participé aux plantations.",
+   "Type": "Réalisation à valoriser",
+   "Auteur": "Équipe de sciences",
+   "Structure": "Collège A",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "exemples/images/jardin.svg",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de sciences",
+   "Deposee_le": "J-25"
+  },
+  {
+   "id": 2,
+   "Consultation": 1,
+   "Titre": "Un livret d'accueil écrit par les nouveaux collègues",
+   "Description": "Les collègues arrivés l'an dernier ont rédigé le livret qu'ils auraient aimé recevoir. Il est remis à chaque nouvelle personne depuis la rentrée.",
+   "Type": "Réalisation à valoriser",
+   "Auteur": "Groupe accueil",
+   "Structure": "Service de la formation",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "exemples/images/livret.svg",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Groupe accueil",
+   "Deposee_le": "J-20"
+  },
+  {
+   "id": 3,
+   "Consultation": 1,
+   "Titre": "Le podcast des élèves délégués",
+   "Description": "Six épisodes enregistrés par les délégués pour expliquer le fonctionnement du conseil de vie lycéenne à leurs camarades.",
+   "Type": "Réalisation à valoriser",
+   "Auteur": "Vie scolaire",
+   "Structure": "Lycée B",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "exemples/images/podcast.svg",
+   "Lien": "https://www.education.gouv.fr/",
+   "Masquee": false,
+   "Deposee_par": "Vie scolaire",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 4,
+   "Consultation": 1,
+   "Titre": "Un forum des métiers organisé par trois établissements",
+   "Description": "Pour la première fois, trois établissements ont mutualisé leur forum des métiers : 40 intervenants et 600 élèves accueillis en une journée.",
+   "Type": "Réalisation à valoriser",
+   "Auteur": "Coordination du bassin",
+   "Structure": "Lycée professionnel D",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "exemples/images/forum.svg",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Coordination du bassin",
+   "Deposee_le": "J-6"
+  },
+  {
+   "id": 5,
+   "Consultation": 1,
+   "Titre": "Des réunions plus courtes grâce à un ordre du jour partagé",
+   "Description": "L'ordre du jour est construit à plusieurs avant chaque réunion. Nos réunions sont passées de deux heures à une heure.",
+   "Type": "Réalisation à valoriser",
+   "Auteur": "Secrétariat de direction",
+   "Structure": "Direction des ressources humaines",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Secrétariat de direction",
+   "Deposee_le": "J-3"
+  },
+  {
+   "id": 6,
+   "Consultation": 2,
+   "Titre": "Un annuaire des compétences de l'équipe",
+   "Description": "Savoir qui maîtrise quel logiciel ou quelle procédure éviterait de chercher pendant des heures.",
+   "Type": "Idée",
+   "Auteur": "Lou Simon",
+   "Structure": "",
+   "Statut": "Retenue",
+   "Suite": "Retenue : un premier annuaire sera proposé au prochain trimestre. Merci à Lou pour l'idée.",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Lou Simon",
+   "Deposee_le": "J-40"
+  },
+  {
+   "id": 7,
+   "Consultation": 2,
+   "Titre": "Des modèles de courriers communs",
+   "Description": "Partager les modèles de courriers les plus utilisés dans un dossier commun, avec une date de mise à jour.",
+   "Type": "Idée",
+   "Auteur": "Inès Roux",
+   "Structure": "",
+   "Statut": "En cours",
+   "Suite": "En cours : le dossier commun existe, les modèles y sont ajoutés au fil de l'eau.",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Inès Roux",
+   "Deposee_le": "J-35"
+  },
+  {
+   "id": 8,
+   "Consultation": 2,
+   "Titre": "Une demi-journée par mois sans réunion",
+   "Description": "Bloquer une demi-journée sans réunion pour avancer sur les dossiers de fond.",
+   "Type": "Idée",
+   "Auteur": "Hugo Vincent",
+   "Structure": "",
+   "Statut": "À l'étude",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Hugo Vincent",
+   "Deposee_le": "J-15"
+  },
+  {
+   "id": 9,
+   "Consultation": 2,
+   "Titre": "Un tableau des congés partagé",
+   "Description": "Voir d'un coup d'œil qui est absent quand on planifie une réunion.",
+   "Type": "Idée",
+   "Auteur": "Nina Fournier",
+   "Structure": "",
+   "Statut": "Réalisée",
+   "Suite": "Réalisé : le tableau est disponible dans le document « Organisation ».",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Nina Fournier",
+   "Deposee_le": "J-60"
+  },
+  {
+   "id": 10,
+   "Consultation": 2,
+   "Titre": "Des visites d'autres services",
+   "Description": "Passer une demi-journée dans un autre service pour mieux comprendre son travail.",
+   "Type": "Idée",
+   "Auteur": "Malik Morel",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Malik Morel",
+   "Deposee_le": "J-5"
+  },
+  {
+   "id": 11,
+   "Consultation": 2,
+   "Titre": "Pourquoi les comptes rendus arrivent-ils si tard ?",
+   "Description": "Certains comptes rendus arrivent plusieurs semaines après la réunion. Peut-on fixer un délai ?",
+   "Type": "Question",
+   "Auteur": "Rose Girard",
+   "Structure": "",
+   "Statut": "Non retenue",
+   "Suite": "Non retenue sous cette forme : le nouvel outil de réunion produit le compte rendu le jour même, ce qui répond au besoin.",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Rose Girard",
+   "Deposee_le": "J-28"
+  },
+  {
+   "id": 12,
+   "Consultation": 2,
+   "Titre": "Un guide de l'État sur le langage clair",
+   "Description": "Le guide publié récemment pourrait nous aider à rédiger nos courriers aux familles.",
+   "Type": "Signal de veille",
+   "Auteur": "Paul André",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "https://www.modernisation.gouv.fr/",
+   "Masquee": false,
+   "Deposee_par": "Paul André",
+   "Deposee_le": "J-8"
+  },
+  {
+   "id": 13,
+   "Consultation": 3,
+   "Titre": "Accueillir les nouveaux collègues",
+   "Description": "Finaliser le parcours d'accueil et le tester à la rentrée.",
+   "Type": "Idée",
+   "Auteur": "Équipe de direction",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de direction",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 14,
+   "Consultation": 3,
+   "Titre": "Simplifier nos procédures internes",
+   "Description": "Recenser les trois procédures les plus lourdes et les alléger.",
+   "Type": "Idée",
+   "Auteur": "Équipe de direction",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de direction",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 15,
+   "Consultation": 3,
+   "Titre": "Développer le travail entre établissements",
+   "Description": "Organiser deux rencontres entre équipes de différents établissements.",
+   "Type": "Idée",
+   "Auteur": "Équipe de direction",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de direction",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 16,
+   "Consultation": 3,
+   "Titre": "Mieux communiquer nos résultats",
+   "Description": "Publier un bilan court et lisible à chaque fin de période.",
+   "Type": "Idée",
+   "Auteur": "Équipe de direction",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de direction",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 17,
+   "Consultation": 3,
+   "Titre": "Former l'équipe aux outils numériques",
+   "Description": "Proposer des ateliers courts sur les outils de La Suite numérique.",
+   "Type": "Idée",
+   "Auteur": "Équipe de direction",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Équipe de direction",
+   "Deposee_le": "J-12"
+  },
+  {
+   "id": 18,
+   "Consultation": 4,
+   "Titre": "Outil A",
+   "Description": "Éditeur de texte collaboratif, prise en main immédiate.",
+   "Type": "Idée",
+   "Auteur": "Groupe de test",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Groupe de test",
+   "Deposee_le": "J-30"
+  },
+  {
+   "id": 19,
+   "Consultation": 4,
+   "Titre": "Outil B",
+   "Description": "Carnet de notes structuré par réunion, avec modèles.",
+   "Type": "Idée",
+   "Auteur": "Groupe de test",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Groupe de test",
+   "Deposee_le": "J-30"
+  },
+  {
+   "id": 20,
+   "Consultation": 4,
+   "Titre": "Outil C",
+   "Description": "Tableau blanc partagé, très visuel mais moins structuré.",
+   "Type": "Idée",
+   "Auteur": "Groupe de test",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Groupe de test",
+   "Deposee_le": "J-30"
+  },
+  {
+   "id": 21,
+   "Consultation": 5,
+   "Titre": "Le bien-être au travail",
+   "Description": "",
+   "Type": "Idée",
+   "Auteur": "Comité d'organisation",
+   "Structure": "",
+   "Statut": "Retenue",
+   "Suite": "Retenu à une large majorité. La journée aura lieu le premier jeudi de septembre.",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Comité d'organisation",
+   "Deposee_le": "J-45"
+  },
+  {
+   "id": 22,
+   "Consultation": 5,
+   "Titre": "Le numérique au service de l'équipe",
+   "Description": "",
+   "Type": "Idée",
+   "Auteur": "Comité d'organisation",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Comité d'organisation",
+   "Deposee_le": "J-45"
+  },
+  {
+   "id": 23,
+   "Consultation": 5,
+   "Titre": "Coopérer avec nos partenaires",
+   "Description": "",
+   "Type": "Idée",
+   "Auteur": "Comité d'organisation",
+   "Structure": "",
+   "Statut": "Déposée",
+   "Suite": "",
+   "Image": "",
+   "Lien": "",
+   "Masquee": false,
+   "Deposee_par": "Comité d'organisation",
+   "Deposee_le": "J-45"
+  }
+ ],
+ "Criteres": [
+  {
+   "id": 1,
+   "Consultation": 4,
+   "Nom": "Facilité de prise en main",
+   "Description": "Peut-on s'en servir sans formation ?",
+   "Poids": 2
+  },
+  {
+   "id": 2,
+   "Consultation": 4,
+   "Nom": "Accessibilité",
+   "Description": "Utilisable au clavier et avec un lecteur d'écran",
+   "Poids": 2
+  },
+  {
+   "id": 3,
+   "Consultation": 4,
+   "Nom": "Coût",
+   "Description": "5 : gratuit ou déjà acquis",
+   "Poids": 1
+  }
+ ],
+ "Votes": [
+  {
+   "id": 1,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 2,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 3,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 4,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 5,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 6,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 7,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 8,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 9,
+   "Consultation": 1,
+   "Proposition": 1,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 10,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 11,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 12,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 13,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 14,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 15,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 16,
+   "Consultation": 1,
+   "Proposition": 2,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 17,
+   "Consultation": 1,
+   "Proposition": 3,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 18,
+   "Consultation": 1,
+   "Proposition": 3,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 19,
+   "Consultation": 1,
+   "Proposition": 3,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 20,
+   "Consultation": 1,
+   "Proposition": 3,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 21,
+   "Consultation": 1,
+   "Proposition": 3,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 22,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 23,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 24,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 25,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 26,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 27,
+   "Consultation": 1,
+   "Proposition": 4,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 28,
+   "Consultation": 1,
+   "Proposition": 5,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 29,
+   "Consultation": 1,
+   "Proposition": 5,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 30,
+   "Consultation": 1,
+   "Proposition": 5,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 31,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 32,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 33,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 34,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 35,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 36,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 37,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 38,
+   "Consultation": 2,
+   "Proposition": 6,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 39,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 40,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 41,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 42,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 43,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 44,
+   "Consultation": 2,
+   "Proposition": 7,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 45,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 46,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 47,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 48,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 49,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 50,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 51,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 52,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 53,
+   "Consultation": 2,
+   "Proposition": 8,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 54,
+   "Consultation": 2,
+   "Proposition": 9,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 55,
+   "Consultation": 2,
+   "Proposition": 9,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 56,
+   "Consultation": 2,
+   "Proposition": 9,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 57,
+   "Consultation": 2,
+   "Proposition": 9,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 58,
+   "Consultation": 2,
+   "Proposition": 10,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 59,
+   "Consultation": 2,
+   "Proposition": 10,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 60,
+   "Consultation": 2,
+   "Proposition": 10,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 61,
+   "Consultation": 2,
+   "Proposition": 10,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 62,
+   "Consultation": 2,
+   "Proposition": 10,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 63,
+   "Consultation": 2,
+   "Proposition": 11,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 64,
+   "Consultation": 2,
+   "Proposition": 11,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 65,
+   "Consultation": 2,
+   "Proposition": 12,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 66,
+   "Consultation": 2,
+   "Proposition": 12,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 67,
+   "Consultation": 2,
+   "Proposition": 12,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 68,
+   "Consultation": 3,
+   "Proposition": 15,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 69,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 3,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 70,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 71,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 72,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 73,
+   "Consultation": 3,
+   "Proposition": 16,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 74,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 75,
+   "Consultation": 3,
+   "Proposition": 15,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 76,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 77,
+   "Consultation": 3,
+   "Proposition": 15,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 78,
+   "Consultation": 3,
+   "Proposition": 16,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 79,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 80,
+   "Consultation": 3,
+   "Proposition": 16,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 81,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 3,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 82,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 83,
+   "Consultation": 3,
+   "Proposition": 16,
+   "Critere": null,
+   "Valeur": 3,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 84,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 85,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 86,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 87,
+   "Consultation": 3,
+   "Proposition": 15,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 88,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 89,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 90,
+   "Consultation": 3,
+   "Proposition": 15,
+   "Critere": null,
+   "Valeur": 3,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 91,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 92,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 93,
+   "Consultation": 3,
+   "Proposition": 14,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 94,
+   "Consultation": 3,
+   "Proposition": 13,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 95,
+   "Consultation": 3,
+   "Proposition": 16,
+   "Critere": null,
+   "Valeur": 3,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 96,
+   "Consultation": 3,
+   "Proposition": 17,
+   "Critere": null,
+   "Valeur": 2,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 97,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 98,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 2,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 99,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 100,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 101,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 102,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 103,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 104,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 2,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 105,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 106,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 107,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 108,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 109,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 110,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 111,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 112,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 113,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 2,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 114,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 115,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 116,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 3,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 117,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 118,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 119,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 5,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 120,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 2,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 121,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 3,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 122,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 123,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 124,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 125,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 126,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 127,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 128,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 129,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 130,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 131,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 132,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 133,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 134,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 3,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 135,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 136,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 137,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 4,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 138,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 139,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 140,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 1,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 141,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 142,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 143,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 2,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 144,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 145,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 3,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 146,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 5,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 147,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 148,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 149,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 150,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 151,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 152,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 3,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 153,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 3,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 154,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 155,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 3,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 156,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 157,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 3,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 158,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 159,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 5,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 160,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 1,
+   "Valeur": 5,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 161,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 2,
+   "Valeur": 3,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 162,
+   "Consultation": 4,
+   "Proposition": 18,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 163,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 1,
+   "Valeur": 4,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 164,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 2,
+   "Valeur": 5,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 165,
+   "Consultation": 4,
+   "Proposition": 19,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 166,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 1,
+   "Valeur": 3,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 167,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 2,
+   "Valeur": 2,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 168,
+   "Consultation": 4,
+   "Proposition": 20,
+   "Critere": 3,
+   "Valeur": 4,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 169,
+   "Consultation": 5,
+   "Proposition": 22,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "camille.martin@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 170,
+   "Consultation": 5,
+   "Proposition": 23,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "dominique.bernard@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 171,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "alex.petit@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 172,
+   "Consultation": 5,
+   "Proposition": 22,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "sacha.durand@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 173,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "morgan.leroy@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 174,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "charlie.moreau@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 175,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "lou.simon@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 176,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "noa.laurent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 177,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "eden.michel@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 178,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "maxime.garcia@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 179,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "ines.roux@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 180,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "hugo.vincent@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 181,
+   "Consultation": 5,
+   "Proposition": 21,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "nina.fournier@exemple.fr",
+   "Vote_le": "J-2"
+  },
+  {
+   "id": 182,
+   "Consultation": 5,
+   "Proposition": 22,
+   "Critere": null,
+   "Valeur": 1,
+   "Votant": "malik.morel@exemple.fr",
+   "Vote_le": "J-2"
+  }
+ ],
+ "Votants": [
+  {
+   "id": 1,
+   "Email": "camille.martin@exemple.fr",
+   "Nom": "Camille Martin"
+  },
+  {
+   "id": 2,
+   "Email": "dominique.bernard@exemple.fr",
+   "Nom": "Dominique Bernard"
+  },
+  {
+   "id": 3,
+   "Email": "alex.petit@exemple.fr",
+   "Nom": "Alex Petit"
+  },
+  {
+   "id": 4,
+   "Email": "sacha.durand@exemple.fr",
+   "Nom": "Sacha Durand"
+  },
+  {
+   "id": 5,
+   "Email": "morgan.leroy@exemple.fr",
+   "Nom": "Morgan Leroy"
+  },
+  {
+   "id": 6,
+   "Email": "charlie.moreau@exemple.fr",
+   "Nom": "Charlie Moreau"
+  },
+  {
+   "id": 7,
+   "Email": "lou.simon@exemple.fr",
+   "Nom": "Lou Simon"
+  },
+  {
+   "id": 8,
+   "Email": "noa.laurent@exemple.fr",
+   "Nom": "Noa Laurent"
+  },
+  {
+   "id": 9,
+   "Email": "eden.michel@exemple.fr",
+   "Nom": "Eden Michel"
+  },
+  {
+   "id": 10,
+   "Email": "maxime.garcia@exemple.fr",
+   "Nom": "Maxime Garcia"
+  },
+  {
+   "id": 11,
+   "Email": "ines.roux@exemple.fr",
+   "Nom": "Ines Roux"
+  },
+  {
+   "id": 12,
+   "Email": "hugo.vincent@exemple.fr",
+   "Nom": "Hugo Vincent"
+  },
+  {
+   "id": 13,
+   "Email": "nina.fournier@exemple.fr",
+   "Nom": "Nina Fournier"
+  },
+  {
+   "id": 14,
+   "Email": "malik.morel@exemple.fr",
+   "Nom": "Malik Morel"
+  }
+ ]
+}

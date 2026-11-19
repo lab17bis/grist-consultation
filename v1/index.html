@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr" data-fr-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consultations</title>
+  <link rel="stylesheet" href="vendor/dsfr/dsfr.min.css">
+  <link rel="stylesheet" href="vendor/dsfr/utility/icons/icons.min.css">
+  <link rel="stylesheet" href="commun/page.css?v=1">
+  <link rel="stylesheet" href="css/app.css?v=1">
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+</head>
+<body>
+  <a class="fr-link gd-evitement" href="#gd-app">Aller au contenu</a>
+  <div id="entete"></div>
+
+  <div id="gd-demo" class="fr-notice fr-notice--info gd-ecran" hidden>
+    <div class="gd-marge">
+      <div class="fr-notice__body">
+        <p class="fr-notice__title">Mode démonstration : données fictives, rien n'est enregistré.</p>
+      </div>
+    </div>
+  </div>
+
+  <main id="gd-app" class="gd-marge" tabindex="-1">
+    <p>Chargement…</p>
+  </main>
+
+  <div id="pied"></div>
+  <div class="gd-pied gd-marge gd-ecran">
+    <div class="gd-pied__liens">
+      <a class="fr-link fr-text--sm" href="#/reglages">Réglages</a>
+      <button type="button" class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline fr-icon-refresh-line fr-btn--icon-left" id="gd-actualiser">Actualiser</button>
+    </div>
+    <div class="gd-pied__theme">
+      <label class="fr-label" for="gd-theme">Thème</label>
+      <select class="fr-select fr-select--sm" id="gd-theme">
+        <option value="auto">Automatique</option>
+        <option value="light">Clair</option>
+        <option value="dark">Sombre</option>
+      </select>
+    </div>
+  </div>
+
+  <script src="commun/page-dsfr.js?v=2"></script>
+  <script src="commun/page-editeur.js?v=1"></script>
+  <script src="js/app.js?v=1"></script>
+</body>
+</html>
