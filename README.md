@@ -104,7 +104,11 @@ Ce que fait cet outil : il ne crée ni ne lit de table de personnes. Pour savoir
 
 ## Espaces clés en main
 
-Ce widget est assemblé, avec d'autres, dans [espace-contributions](https://github.com/lab17bis/espace-contributions) : boîte à idées, valorisation des réalisations des équipes, votes et suivi des suites données. Il peut aussi être ajouté à n'importe quel espace existant (une page « Consultations »), par exemple pour faire prioriser l'équipe dans [espace-pilotage](https://github.com/lab17bis/espace-pilotage) ou trancher entre des options dans [espace-collaboratif](https://github.com/lab17bis/espace-collaboratif).
+Ce widget est assemblé, avec d'autres, dans des **espaces** : des documents Grist prêts à l'emploi.
+
+- [espace-contributions](https://github.com/lab17bis/espace-contributions) : boîte à idées, valorisation des réalisations des équipes, votes et suites données (page *Consultations*).
+- [espace-pilotage](https://github.com/lab17bis/espace-pilotage) : l'équipe classe les chantiers du semestre par un vote par points (page *Priorités*).
+- [espace-collaboratif](https://github.com/lab17bis/espace-collaboratif) : boîte à idées de l'équipe et choix collectifs (page *Décider ensemble*).
 
 ## Autres outils de la même famille
 
