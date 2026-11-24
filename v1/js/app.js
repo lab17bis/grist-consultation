@@ -340,6 +340,10 @@
   function rendre() {
     var r = route(), html;
     monterCoque();
+    if (PUBLIC && tablesManquantes().length) {
+      app.innerHTML = '<div class="fr-alert fr-alert--warning"><p>Cette consultation n\'est pas lisible publiquement. Le document est-il partagé en lecture publique, et les tables ' + tablesManquantes().map(esc).join(', ') + ' sont-elles accessibles ?</p></div>';
+      return;
+    }
     if (!DEMO && tablesManquantes().length) { app.innerHTML = vueInstallation(); return; }
     if (r.vue === 'accueil') {
       // Une seule consultation : on l'ouvre directement (le fil d'Ariane ramène à la liste).
@@ -802,7 +806,8 @@
   }
   function tablesManquantes() {
     var ids = meta.tables.map(function (t) { return t.tableId; });
-    return TABLES.filter(function (t) { return ids.indexOf(t) < 0; });
+    // Page publique : la table des votants n'est jamais lue, elle peut être masquée par les règles d'accès.
+    return TABLES.filter(function (t) { return ids.indexOf(t) < 0 && !(PUBLIC && t === 'Votants'); });
   }
   function vueInstallation() {
     var manquantes = tablesManquantes();
