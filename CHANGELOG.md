@@ -8,6 +8,9 @@ Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans ret
 - Page publique : une table ou une colonne masquée par les règles d'accès du document (par exemple les adresses de courriel) n'empêche plus d'afficher le reste de la page.
 - L'outil de consultation n'affiche plus l'écran d'installation quand la table des votants est masquée : la page publique n'a jamais besoin de cette table. Si une autre table est illisible, un message l'explique au lieu de proposer d'installer l'outil.
 
+### Ajouté
+- Documentation de la page publique (README) : réglages, ce qui est lu, ce qui reste caché, règles d'accès à poser.
+
 ## 2026-11-24 (page publique)
 
 ### Ajouté

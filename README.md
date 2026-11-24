@@ -133,6 +133,14 @@ Les widgets qui ont un en-tête et un pied de page partagent les mêmes réglage
 
 Grist, widget Grist, widget-outil, consultation, boîte à idées, budget participatif, vote, vote par points, choix unique, notation multicritère, priorisation, aide à la décision, valorisation, réalisations, innovation participative, DSFR, Système de design de l'État, La Suite numérique, DINUM, service public, clé en main, logiciel libre.
 
+## Page publique
+
+Paramètres de l'adresse : `public=1&doc=<lien>&table=Consultations`. La table `Votants` n'est jamais lue et les votants des votes sont remplacés par un numéro. Voter et déposer une proposition se font par un lien de questionnaire, à indiquer dans l'onglet Publication (champ « lien de vote »). Si une table lisible manque, la page l'indique au lieu de proposer l'installation de l'outil.
+
+L'onglet **Publication** construit le lien d'une page publique : collez le lien du document Grist partagé en lecture publique (*Partager › Accès public : Lecteur*), puis copiez ou ouvrez le lien obtenu. La page est en lecture seule, sans compte, et n'écrit jamais dans le document. L'option `integre=1` retire l'en-tête et le pied de page pour intégrer la page dans un autre site ou dans le [portail](https://github.com/lab17bis/grist-portail).
+
+Le partage en lecture publique rend lisibles **toutes** les tables du document, pas seulement celles que la page affiche. Pour masquer une table ou une colonne au public, utilisez les règles d'accès de Grist, par exemple avec la condition `not user.IsLoggedIn` (lecture refusée). La page tolère une table masquée. Testez en navigation privée avant de diffuser le lien.
+
 ## Licence
 
 Code sous licence MIT (voir `LICENSE`). Le DSFR embarqué dans `vendor/dsfr/` conserve sa propre licence. Réutilisation, adaptation et contributions bienvenues.
