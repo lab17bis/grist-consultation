@@ -2,6 +2,16 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-24 (page publique)
+
+### Ajouté
+- Page publique en lecture seule : consultations, propositions, résultats et suites données. L'adresse `index.html?public=1&doc=<lien du document Grist>&table=Consultations` l'affiche sans compte Grist.
+- La table des votants (adresses de courriel) n'est jamais lue par la page publique, et les votants des votes sont remplacés par un numéro.
+- Le vote se fait dans un questionnaire : réglage « Lien du questionnaire de vote » (`{consultation}` est remplacé par le numéro de la consultation), la page publique propose un bouton « Voter ».
+- Module commun `commun/grist-public.js` (et `.css`) : lit le document par l'API REST de Grist, en lecture seule, sans compte.
+- Onglet Publication : saisissez le lien du document Grist partagé en lecture publique, l'outil construit le lien de la page publique, à copier ou à ouvrir ; le lien est enregistré avec les réglages.
+- Option `integre=1` : page sans en-tête ni pied propres, pour l'intégrer dans un autre site.
+
 ## 2026-11-24 (renommage)
 
 ### Modifié

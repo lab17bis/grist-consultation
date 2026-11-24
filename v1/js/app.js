@@ -56,11 +56,12 @@
   // État
   // ---------------------------------------------------------------------------
 
-  var DEMO = window.self === window.top;
+  var PUBLIC = !!(window.GristPublic && window.GristPublic.actif);
+  var DEMO = window.self === window.top && !PUBLIC;
   var meta = { colonnes: [], tables: [], colConfig: false };
   var data = {}, idx = {};
   var moi = null;            // { email, nom } : personne connectée, connue après identification
-  var lectureSeule = false;  // vrai si la personne ne peut pas écrire dans le document
+  var lectureSeule = PUBLIC;  // vrai si la personne ne peut pas écrire dans le document
   var etat = { alerte: null, brouillons: {}, filtres: {}, suppression: null, rendreApresSaisie: false, garderAlerte: false };
   var jeton = null;          // accès aux pièces jointes de Grist (images)
   var app = document.getElementById('gd-app');
@@ -133,7 +134,15 @@
         appliquerReglages(r);
       }).catch(function () { appliquerReglages({}); });
     return Promise.all([config].concat(TABLES.map(function (t) {
-      return grist.docApi.fetchTable(t).then(function (c) { data[t] = lignesDepuisColonnes(c); }).catch(function () { data[t] = []; });
+      // Page publique : la table des votants (adresses de courriel) n'est jamais lue, et les votants des votes sont remplacés par un numéro.
+      if (PUBLIC && t === 'Votants') { data[t] = []; return Promise.resolve(); }
+      return grist.docApi.fetchTable(t).then(function (c) {
+        data[t] = lignesDepuisColonnes(c);
+        if (PUBLIC && t === 'Votes') {
+          var noms = {}, n = 0;
+          data[t].forEach(function (v) { if (v.Votant) { if (!noms[v.Votant]) noms[v.Votant] = 'v' + (++n); v.Votant = noms[v.Votant]; } });
+        }
+      }).catch(function () { data[t] = []; });
     })));
   }
 
@@ -148,7 +157,7 @@
   // qui est connecté, puis retire la ligne si la personne était déjà connue.
   var cleMoi = null;
   function identifier() {
-    if (DEMO || moi) return Promise.resolve();
+    if (DEMO || PUBLIC || moi) return Promise.resolve();
     return grist.docApi.getDocName().catch(function () { return 'doc'; }).then(function (nomDoc) {
       cleMoi = 'gd-moi-' + nomDoc;
       var connu = null;
@@ -310,6 +319,14 @@
   // ---------------------------------------------------------------------------
 
   function route() {
+    var r = routeBrute();
+    if (PUBLIC) {
+      if (r.vue === 'nouvelle' || r.vue === 'reglages') return { vue: 'accueil' };
+      if (r.vue === 'consultation' && (r.onglet === 'deposer' || r.onglet === 'gerer')) r.onglet = 'propositions';
+    }
+    return r;
+  }
+  function routeBrute() {
     var h = location.hash.replace(/^#\/?/, '').split('/');
     if (h[0] === 'c' && num(h[1])) {
       if (h[2] === 'p' && num(h[3])) return { vue: 'proposition', id: num(h[1]), pid: num(h[3]) };
@@ -387,7 +404,19 @@
     if (closes.length) h += '<h2 class="fr-h5 fr-mt-4w">Closes <span class="gd-compte">(' + closes.length + ')</span></h2><div class="gd-cartes">' + closes.map(carteConsultation).join('') + '</div>';
     return h;
   }
+  // Page publique : le vote se fait dans un questionnaire (adresse dans les réglages, {consultation} = numéro).
+  function lienVote(c) {
+    var u = reglages.publication && reglages.publication.lienVote;
+    return u ? String(u).replace(/\{consultation\}/g, c ? c.id : '') : '';
+  }
+  function appelVote(c) {
+    var u = lienVote(c);
+    if (!PUBLIC || !u || !voteOuvert(c)) return '';
+    return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Pour voter ou déposer une proposition, répondez au questionnaire.</p>' +
+      '<a class="fr-btn fr-mt-1w" href="' + esc(adresse(u)) + '" target="_blank" rel="noopener" title="Voter - nouvelle fenêtre">Voter</a></div>';
+  }
   function blocLectureSeule() {
+    if (PUBLIC) return '';
     return lectureSeule ? '<div class="fr-notice fr-notice--info gd-alerte"><div class="fr-container"><div class="fr-notice__body"><p class="fr-notice__title">Vous consultez ce document en lecture seule : vous ne pouvez ni déposer ni voter.</p></div></div></div>' : '';
   }
 
@@ -429,6 +458,7 @@
       if (close(c)) return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Le vote est clos. Consultez les résultats et les suites données.</p></div>';
       return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Le vote n\'est pas encore ouvert : c\'est le temps du dépôt des propositions.</p></div>';
     }
+    if (PUBLIC) return appelVote(c);
     if (lectureSeule || !moi) return '';
     var t = AIDE_MODE[c.Mode] || AIDE_MODE.Soutien, compte = '';
     if (c.Mode === 'Vote par points') {
@@ -558,6 +588,7 @@
       (p.Suite ? '<div class="fr-callout gd-suite"><h2 class="fr-callout__title fr-h6">Suite donnée</h2><p class="fr-callout__text">' + texteMultiligne(p.Suite) + '</p></div>' : '') +
       '</div><aside class="gd-fiche__cote">' +
       (infos.length ? '<dl class="gd-infos">' + infos.map(function (i) { return '<dt>' + esc(i[0]) + '</dt><dd>' + esc(i[1]) + '</dd>'; }).join('') + '</dl>' : '') +
+      (PUBLIC ? appelVote(c) : '') +
       (voteOuvert(c) && !lectureSeule ? '<h2 class="fr-h6">Votre vote</h2><p class="fr-text--sm">' + esc(AIDE_MODE[c.Mode] || AIDE_MODE.Soutien) + '</p>' + controleVote(c, p, r, true) : '') +
       (r ? '<h2 class="fr-h6 fr-mt-3w">Résultat</h2><p><strong>' + esc(scoreTexte(c, r)) + '</strong>' + (rangN ? ' · ' + rangN + '<sup>e</sup> sur ' + res.length : '') + '<br><span class="gd-meta">' + pluriel(r.votants, 'participant') + '</span></p>' +
         (r.details.length > 1 ? '<ul class="gd-criteres">' + r.details.map(function (d) { return '<li>' + esc(d.nom) + ' : ' + (d.moyenne === null ? '–' : arrondi(d.moyenne, 1).toLocaleString('fr-FR')) + '</li>'; }).join('') + '</ul>' : '') : '') +
@@ -707,7 +738,15 @@
         zone.innerHTML = '<h1 class="fr-h3">Consultations</h1><p class="fr-text--sm">En cours</p>' +
           '<div class="fr-card fr-card--sm fr-mb-2w"><div class="fr-card__body"><div class="fr-card__content"><h2 class="fr-card__title">Exemple de consultation</h2><p class="fr-card__desc">L\'en-tête et le pied de page ci-dessus encadrent tous les écrans de l\'outil.</p></div></div></div>';
       },
-      publication: { mode: 'connecte', adresseWidget: location.href.split('#')[0].split('?')[0] },
+      publication: { mode: 'connecte', adresseWidget: location.href.split('#')[0].split('?')[0],
+        publier: {
+          lienDoc: (brouillonReglages.publication && brouillonReglages.publication.lienDoc) || '',
+          texte: 'Les consultations, propositions, résultats et suites données s\'affichent en page complète, sans compte Grist, en lecture seule. Les adresses de courriel des votants ne sont jamais lues par la page publique, mais protégez-les aussi dans les permissions avancées du document.',
+          champs: [{ libelle: 'Lien du questionnaire de vote (facultatif)', aide: 'La page publique propose un bouton « Voter » vers ce lien. {consultation} est remplacé par le numéro de la consultation.',
+            exemple: 'https://…/questionnaire/?consultation={consultation}', valeur: (brouillonReglages.publication && brouillonReglages.publication.lienVote) || '' }],
+          construire: function (l) { return window.GristPublic ? window.GristPublic.lien(location.href.split('#')[0].split('?')[0], { doc: l, table: 'Consultations' }) : null; },
+          surChangement: function (l, champs) { brouillonReglages.publication = { lienDoc: l, lienVote: (champs && champs[0] && champs[0].valeur) || '' }; }
+        } },
       surEnregistrer: enregistrerReglages
     });
   }
