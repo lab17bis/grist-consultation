@@ -1,4 +1,4 @@
-"""Test « dans Grist » de grist-decision, avec une API Grist simulée (tests/grist-mock.js) chargée dans tests/hote.html.
+"""Test « dans Grist » de grist-consultation, avec une API Grist simulée (tests/grist-mock.js) chargée dans tests/hote.html.
 Lancer un serveur à la racine du dépôt (python3 -m http.server PORT), puis : PORT=… python3 tests/test_dans_grist.py"""
 import os, sys, json
 from playwright.sync_api import sync_playwright
@@ -20,7 +20,7 @@ mock = lambda pg: pg.evaluate('window.MOCK')
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path=os.environ.get('CHROME') or None, args=['--no-sandbox'])
     erreurs = []
-    # --- grist-decision : installation, identification, vote, rechargement
+    # --- grist-consultation : installation, identification, vote, rechargement
     m = {'tables': {'Table1': {'colonnes': {'A': {'type': 'Text'}}, 'lignes': []}}, 'table': 'Table1', 'utilisateur': {'email': 'agent@exemple.fr', 'nom': 'Agent Test'}}
     pg, f = ouvrir(b, 8781, m, erreurs)
     f.get_by_role('button', name='Créer les tables avec un exemple fictif').click()

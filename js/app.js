@@ -1,5 +1,5 @@
 /*
- * grist-decision – recueillir des propositions, les mettre au vote et décider des suites,
+ * grist-consultation – recueillir des propositions, les mettre au vote et décider des suites,
  * widget-outil Grist au DSFR.
  *
  * Une consultation regroupe des propositions (idées, réalisations à valoriser, questions…).
@@ -34,7 +34,8 @@
   var COULEURS_TYPE = ['purple-glycine', 'green-menthe', 'blue-ecume', 'orange-terre-battue', 'yellow-tournesol', 'pink-macaron', 'green-bourgeon', 'brown-caramel'];
   var COULEUR_STATUT = { 'À l\'étude': 'info', 'Retenue': 'success', 'En cours': 'new', 'Réalisée': 'success', 'Non retenue': 'warning' };
 
-  var NOM_COLONNE_CONFIG = 'Config_decision';
+  var NOM_COLONNE_CONFIG = 'Config_consultation';
+  var ANCIEN_NOM_COLONNE_CONFIG = 'Config_decision';   // documents créés avant le renommage : lu et conservé
   var TABLES = ['Consultations', 'Propositions', 'Criteres', 'Votes', 'Votants'];
   var L = {};
   var reglages = {};
@@ -125,8 +126,8 @@
         var tables = lignesDepuisColonnes(m[0]), cols = lignesDepuisColonnes(m[1]);
         meta.tables = tables; meta.colonnes = cols;
         var t = tables.filter(function (x) { return x.tableId === 'Consultations'; })[0];
-        var c = t && cols.filter(function (x) { return x.parentId === t.id && x.colId === NOM_COLONNE_CONFIG; })[0];
-        meta.colConfig = !!c;
+        var c = t && cols.filter(function (x) { return x.parentId === t.id && (x.colId === NOM_COLONNE_CONFIG || x.colId === ANCIEN_NOM_COLONNE_CONFIG); })[0];
+        meta.colConfig = !!c; meta.nomColConfig = c ? c.colId : NOM_COLONNE_CONFIG;
         var r = {};
         try { r = c && c.description ? JSON.parse(c.description) : {}; } catch (e) { r = {}; }
         appliquerReglages(r);
@@ -321,6 +322,7 @@
 
   function rendre() {
     var r = route(), html;
+    monterCoque();
     if (!DEMO && tablesManquantes().length) { app.innerHTML = vueInstallation(); return; }
     if (r.vue === 'accueil') {
       // Une seule consultation : on l'ouvre directement (le fil d'Ariane ramène à la liste).
@@ -329,9 +331,8 @@
     } else if (r.vue === 'consultation') html = vueConsultation(r.id, r.onglet);
     else if (r.vue === 'proposition') html = vueProposition(r.id, r.pid);
     else if (r.vue === 'nouvelle') html = vueGerer(null);
-    else html = vueReglages();
+    else html = vueAccueil();
     app.innerHTML = html;
-    if (r.vue === 'reglages') monterReglages();
     chargerImages();
   }
 
@@ -680,14 +681,9 @@
     ['types', 'Types de propositions', 'Propositions', 'Type', 'Le premier type est proposé par défaut au dépôt.'],
     ['statuts', 'Suites possibles', 'Propositions', 'Statut', 'La première valeur est celle des propositions nouvelles.']
   ];
-  function vueReglages() {
-    var h = filAriane([['Consultations', '#/'], ['Réglages', '']]);
-    if (!brouillonReglages) brouillonReglages = JSON.parse(JSON.stringify(reglages || {}));
-    return h + blocAlerte() + '<div id="gd-config"></div>';
-  }
   function reglagesPropres() {
     var b = brouillonReglages; b.listes = b.listes || {};
-    var h = '<div class="cl-panneau"><p class="fr-text--sm">Réservé aux propriétaires du document. Les réglages sont enregistrés dans la description de la colonne <code>' + NOM_COLONNE_CONFIG + '</code> de la table Consultations.</p>' +
+    var h = '<div class="cl-panneau"><p class="fr-text--sm">Réservé aux propriétaires du document. Les réglages sont enregistrés dans la description de la colonne <code>' + (meta.nomColConfig || NOM_COLONNE_CONFIG) + '</code> de la table Consultations.</p>' +
       '<h2 class="fr-h5">Listes de valeurs</h2><p class="fr-text--sm">Une valeur par ligne. Les choix des colonnes Grist sont mis à jour à l\'enregistrement.</p>';
     LISTES_REGLABLES.forEach(function (l) {
       h += '<div class="fr-input-group"><label class="fr-label" for="rg-' + l[0] + '">' + esc(l[1]) + '<span class="fr-hint-text">Colonne ' + l[2] + '.' + l[3] + '. ' + esc(l[4]) + '</span></label>' +
@@ -696,12 +692,15 @@
     return h + '</div>';
   }
   var configLab = null;
-  function monterReglages() {
-    var z = document.getElementById('gd-config');
-    if (!z || !window.ConfigLab) return;
+  function monterCoque() {
+    var z = document.getElementById('gd-coque');
+    if (configLab || !z || !window.ConfigLab) return;
+    brouillonReglages = JSON.parse(JSON.stringify(reglages || {}));
     brouillonReglages.page = brouillonReglages.page || { marque: '', titre: 'Consultations', pied: { accessibilite: '' } };
     configLab = window.ConfigLab.monter(z, {
-      nom: 'Configuration de Consultations',
+      nom: 'Consultations',
+      vue: { libelle: 'Consultations', element: app },
+      ongletInitial: route().vue === 'reglages' ? 'reglages' : 'vue',
       page: brouillonReglages.page,
       onglets: [{ id: 'reglages', libelle: 'Réglages', rendre: function (zone) { zone.innerHTML = reglagesPropres(); } }],
       apercu: function (zone) {
@@ -709,8 +708,7 @@
           '<div class="fr-card fr-card--sm fr-mb-2w"><div class="fr-card__body"><div class="fr-card__content"><h2 class="fr-card__title">Exemple de consultation</h2><p class="fr-card__desc">L\'en-tête et le pied de page ci-dessus encadrent tous les écrans de l\'outil.</p></div></div></div>';
       },
       publication: { mode: 'connecte', adresseWidget: location.href.split('#')[0].split('?')[0] },
-      surEnregistrer: enregistrerReglages,
-      surAnnuler: function () { brouillonReglages = null; location.hash = '#/'; }
+      surEnregistrer: enregistrerReglages
     });
   }
   function enregistrerReglages() {
@@ -721,8 +719,9 @@
       if (!v.length || v.join('|') === DEFAUTS[l[0]].join('|')) delete b.listes[l[0]]; else b.listes[l[0]] = v;
     });
     var actions = [];
-    if (!meta.colConfig) actions.push(['AddColumn', 'Consultations', NOM_COLONNE_CONFIG, { type: 'Text', label: NOM_COLONNE_CONFIG }]);
-    actions.push(['ModifyColumn', 'Consultations', NOM_COLONNE_CONFIG, { description: JSON.stringify(b) }]);
+    var nomCol = meta.nomColConfig || NOM_COLONNE_CONFIG;
+    if (!meta.colConfig) actions.push(['AddColumn', 'Consultations', nomCol, { type: 'Text', label: nomCol }]);
+    actions.push(['ModifyColumn', 'Consultations', nomCol, { description: JSON.stringify(b) }]);
     LISTES_REGLABLES.forEach(function (l) {
       var c = colonne(l[2], l[3]);
       if (!c || !/^Choice/.test(c.type)) return;
@@ -731,10 +730,11 @@
       actions.push(['ModifyColumn', l[2], l[3], { widgetOptions: JSON.stringify(o) }]);
     });
     grist.docApi.applyUserActions(actions).then(function () {
-      meta.colConfig = true; appliquerReglages(b); brouillonReglages = null;
-      etat.alerte = { type: 'success', texte: 'Réglages enregistrés.' }; rendre();
+      meta.colConfig = true; meta.nomColConfig = nomCol; appliquerReglages(b);
+      if (configLab) { configLab.enregistre(); configLab.message('success', 'Réglages enregistrés.'); }
+      rendre();
     }).catch(function (err) {
-      etat.alerte = { type: 'error', texte: 'Enregistrement impossible : seuls les propriétaires du document peuvent modifier les réglages. (' + ((err && err.message) || err) + ')' }; rendre();
+      if (configLab) configLab.message('error', 'Enregistrement impossible : seuls les propriétaires du document peuvent modifier les réglages. (' + ((err && err.message) || err) + ')');
     });
   }
   function colonne(t, c) {
@@ -980,6 +980,7 @@
   window.addEventListener('hashchange', function () {
     if (etat.garderAlerte) etat.garderAlerte = false; else etat.alerte = null;
     etat.suppression = null;
+    if (configLab) configLab.onglet(route().vue === 'reglages' ? 'reglages' : 'vue');
     rendre(); window.scrollTo(0, 0);
   });
 

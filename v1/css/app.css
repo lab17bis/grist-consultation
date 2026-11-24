@@ -1,4 +1,4 @@
-/* Mise en page propre à grist-decision. Les composants viennent du DSFR. */
+/* Mise en page propre à grist-consultation. Les composants viennent du DSFR. */
 
 body { background: var(--background-default-grey); color: var(--text-default-grey); min-height: 100vh; display: flex; flex-direction: column; }
 .gd-marge { padding-left: 1.5rem; padding-right: 1.5rem; }
@@ -96,3 +96,6 @@ body { background: var(--background-default-grey); color: var(--text-default-gre
   #gd-app { padding: 0; }
 }
 .gd-boutons { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem; }
+
+/* Coque à onglets (ajout 2026-11-24) */
+#gd-coque #gd-app { padding-left: 0; padding-right: 0; }

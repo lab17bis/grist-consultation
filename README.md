@@ -1,4 +1,4 @@
-# grist-decision
+# grist-consultation
 
 > **Widget-outil pour Grist, clé en main.** Il transforme un document Grist en espace de consultation au Système de design de l'État (DSFR) : l'équipe dépose des propositions (idées, réalisations à valoriser, questions, signaux de veille), les soutient ou les départage par un vote, et chacun voit la suite donnée à chaque proposition.
 
@@ -22,12 +22,12 @@ Chaque **consultation** a :
 
 Les propositions s'affichent par défaut dans un ordre au hasard, propre à chaque personne, pour ne pas avantager les premières déposées.
 
-Démonstration avec des données fictives (rien n'est enregistré) : <https://lab17bis.github.io/grist-decision/v1/>
+Démonstration avec des données fictives (rien n'est enregistré) : <https://lab17bis.github.io/grist-consultation/v1/>
 
 ## Le brancher en 3 minutes
 
 1. **Créer un document Grist vide** (ou ouvrir un document existant).
-2. **Ajouter le widget** : *Ajouter › Ajouter une page › Personnalisé*, sur n'importe quelle table. Dans le panneau de droite, choisissez *URL personnalisée*, saisissez `https://lab17bis.github.io/grist-decision/v1/` et donnez l'**accès complet au document**.
+2. **Ajouter le widget** : *Ajouter › Ajouter une page › Personnalisé*, sur n'importe quelle table. Dans le panneau de droite, choisissez *URL personnalisée*, saisissez `https://lab17bis.github.io/grist-consultation/v1/` et donnez l'**accès complet au document**.
 3. **Installer** : le widget propose *Créer les tables*, ou *Créer les tables avec un exemple fictif* pour essayer (sans votes). Il crée `Consultations`, `Propositions`, `Criteres`, `Votes` et `Votants` sans toucher aux tables existantes. À faire par un propriétaire du document.
 
 Invitez ensuite l'équipe dans le document (*Partager*) en **éditeur** : il faut pouvoir écrire pour déposer et voter. Une personne en lecture seule voit les propositions et les résultats, sans voter.
@@ -36,7 +36,7 @@ Pour recueillir des propositions de personnes qui n'ont pas accès au document, 
 
 ## Le régler
 
-Le bouton *Configurer* (en haut de l'outil) ouvre une page de configuration unique, en quatre onglets : *Réglages*, *En-tête et pied*, *Aperçu* (le rendu avec les réglages en cours) et *Publication* (qui peut utiliser l'outil, adresse du widget). Elle regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
+Le widget s'ouvre sur une barre d'onglets : *Consultations* (l'outil), puis *Réglages*, *En-tête et pied*, *Aperçu* (le rendu avec les réglages en cours) et *Publication* (qui peut utiliser l'outil, adresse du widget). Elle regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
 
 Chaque consultation se règle dans son onglet *Gérer* : titre, question, présentation, mode de vote, étape, échéance, visibilité des résultats, points par personne, critères de notation et leur poids.
 
@@ -84,9 +84,9 @@ Les modes, étapes et visibilités sont utilisés par le code : ne les renommez 
 
 ## Version stable et version en cours
 
-Dans Grist, utilisez l'adresse de la **version stable** : `https://lab17bis.github.io/grist-decision/v1/`. Elle ne change que pour corriger un défaut, sans toucher aux tables ni aux réglages. Une évolution qui les modifie paraît sous une nouvelle adresse (`v2/`) : les documents déjà en service restent sur `v1/` tant que vous ne changez pas l'adresse du widget.
+Dans Grist, utilisez l'adresse de la **version stable** : `https://lab17bis.github.io/grist-consultation/v1/`. Elle ne change que pour corriger un défaut, sans toucher aux tables ni aux réglages. Une évolution qui les modifie paraît sous une nouvelle adresse (`v2/`) : les documents déjà en service restent sur `v1/` tant que vous ne changez pas l'adresse du widget.
 
-L'adresse sans numéro (`https://lab17bis.github.io/grist-decision/`) suit la version en cours de développement. Elle sert à essayer les nouveautés ; ne l'utilisez pas pour un document en service.
+L'adresse sans numéro (`https://lab17bis.github.io/grist-consultation/`) suit la version en cours de développement. Elle sert à essayer les nouveautés ; ne l'utilisez pas pour un document en service.
 
 Pour figer une nouvelle version stable après des tests réussis : `sh outils/figer-version.sh 1` (ou `2` pour une version qui change les tables), puis publiez le dépôt.
 
@@ -97,7 +97,7 @@ Plusieurs outils de la même famille peuvent travailler dans un même document G
 - **Une seule table `Personnes`** par document. Colonne commune : `Nom`. Colonnes facultatives reconnues par tous : `Email` et `Structure` (référence à `Structures`). Un outil lit cette table si elle existe et la crée seulement si elle manque. Il n'y ajoute que ses propres colonnes.
 - **Une seule table `Structures`** pour les équipes, services ou établissements : `Nom`, `Sigle`, `Type`, `Parent` (structure de rattachement).
 - **Aucun outil ne supprime ni ne renomme** une table ou une colonne qu'il n'a pas créée.
-- **Les autres tables portent des noms propres à chaque outil**, pour éviter les collisions (par exemple `Actions` pour grist-projet, `Actions_reunion` pour grist-decision). Les réglages sont rangés dans la description d'une colonne technique propre à l'outil (`Config_…`).
+- **Les autres tables portent des noms propres à chaque outil**, pour éviter les collisions (par exemple `Actions` pour grist-projet, `Actions_reunion` pour grist-consultation). Les réglages sont rangés dans la description d'une colonne technique propre à l'outil (`Config_…`).
 - **Identifier la personne connectée** : un widget ne connaît pas l'adresse de la personne connectée. Les colonnes « créé par » utilisent une formule `user.Email` calculée à la création. Seul un outil qui doit relier la personne connectée à sa fiche crée la table `Comptes`.
 
 Ce que fait cet outil : il ne crée ni ne lit de table de personnes. Pour savoir qui vote, il utilise sa propre table `Votants` (adresse et nom remplis par Grist, une ligne par personne venue voter) : elle n'est pas reliée à `Personnes`.

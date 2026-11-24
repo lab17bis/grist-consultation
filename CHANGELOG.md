@@ -2,6 +2,19 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-24 (renommage)
+
+### Modifié
+- L'outil s'appelle désormais **grist-consultation** (dépôt, adresse publique `lab17bis.github.io/grist-consultation/v1/`, documentation). L'ancien nom `grist-decision` n'est plus publié : mettez à jour l'adresse du widget dans vos documents.
+- Les réglages déjà enregistrés sont conservés : la colonne `Config_decision` est toujours lue et réécrite ; les nouveaux documents utilisent `Config_consultation`.
+
+## 2026-11-24 (barre d'onglets permanente)
+
+### Modifié
+- Le widget s'ouvre désormais sur une barre d'onglets, comme le catalogue et le questionnaire : *Consultations*, puis les onglets de réglages, En-tête et pied, Aperçu, Publication. L'outil lui-même est le premier onglet.
+- Le bouton « Configurer » laisse la place à la barre d'onglets ; les anciens liens et boutons « Réglages » restent actifs et ouvrent l'onglet Réglages.
+- L'enregistrement des réglages reste dans la colonne de configuration existante : rien à migrer.
+
 ## 2026-11-24
 
 ### Ajouté
