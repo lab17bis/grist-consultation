@@ -682,26 +682,40 @@
   ];
   function vueReglages() {
     var h = filAriane([['Consultations', '#/'], ['Réglages', '']]);
-    if (DEMO) return h + '<div class="fr-alert fr-alert--info"><p>Les réglages se font dans Grist, par un propriétaire du document.</p></div>';
     if (!brouillonReglages) brouillonReglages = JSON.parse(JSON.stringify(reglages || {}));
+    return h + blocAlerte() + '<div id="gd-config"></div>';
+  }
+  function reglagesPropres() {
     var b = brouillonReglages; b.listes = b.listes || {};
-    h += '<h1 class="fr-h3">Réglages</h1><p class="fr-text--sm">Réservé aux propriétaires du document. Les réglages sont enregistrés dans la description de la colonne <code>' + NOM_COLONNE_CONFIG + '</code> de la table Consultations.</p>' + blocAlerte() +
-      '<section><h2 class="fr-h5">En-tête et pied de page</h2><div id="gd-reglages-page"></div></section><section><h2 class="fr-h5">Listes de valeurs</h2><p class="fr-text--sm">Une valeur par ligne. Les choix des colonnes Grist sont mis à jour à l\'enregistrement.</p>';
+    var h = '<div class="cl-panneau"><p class="fr-text--sm">Réservé aux propriétaires du document. Les réglages sont enregistrés dans la description de la colonne <code>' + NOM_COLONNE_CONFIG + '</code> de la table Consultations.</p>' +
+      '<h2 class="fr-h5">Listes de valeurs</h2><p class="fr-text--sm">Une valeur par ligne. Les choix des colonnes Grist sont mis à jour à l\'enregistrement.</p>';
     LISTES_REGLABLES.forEach(function (l) {
       h += '<div class="fr-input-group"><label class="fr-label" for="rg-' + l[0] + '">' + esc(l[1]) + '<span class="fr-hint-text">Colonne ' + l[2] + '.' + l[3] + '. ' + esc(l[4]) + '</span></label>' +
         '<textarea class="fr-input" rows="5" id="rg-' + l[0] + '">' + esc((b.listes[l[0]] && b.listes[l[0]].length ? b.listes[l[0]] : DEFAUTS[l[0]]).join('\n')) + '</textarea></div>';
     });
-    return h + '</section><ul class="fr-btns-group fr-btns-group--inline-md"><li><button type="button" class="fr-btn" data-action="enregistrer-reglages">Enregistrer les réglages</button></li>' +
-      '<li><button type="button" class="fr-btn fr-btn--secondary" data-action="annuler-reglages">Annuler les modifications</button></li></ul>';
+    return h + '</div>';
   }
+  var configLab = null;
   function monterReglages() {
-    var z = document.getElementById('gd-reglages-page');
-    if (!z || !window.PageEditeur) return;
+    var z = document.getElementById('gd-config');
+    if (!z || !window.ConfigLab) return;
     brouillonReglages.page = brouillonReglages.page || { marque: '', titre: 'Consultations', pied: { accessibilite: '' } };
-    window.PageEditeur.monter(z, brouillonReglages.page, function () {});
+    configLab = window.ConfigLab.monter(z, {
+      nom: 'Configuration de Consultations',
+      page: brouillonReglages.page,
+      onglets: [{ id: 'reglages', libelle: 'Réglages', rendre: function (zone) { zone.innerHTML = reglagesPropres(); } }],
+      apercu: function (zone) {
+        zone.innerHTML = '<h1 class="fr-h3">Consultations</h1><p class="fr-text--sm">En cours</p>' +
+          '<div class="fr-card fr-card--sm fr-mb-2w"><div class="fr-card__body"><div class="fr-card__content"><h2 class="fr-card__title">Exemple de consultation</h2><p class="fr-card__desc">L\'en-tête et le pied de page ci-dessus encadrent tous les écrans de l\'outil.</p></div></div></div>';
+      },
+      publication: { mode: 'connecte', adresseWidget: location.href.split('#')[0].split('?')[0] },
+      surEnregistrer: enregistrerReglages,
+      surAnnuler: function () { brouillonReglages = null; location.hash = '#/'; }
+    });
   }
   function enregistrerReglages() {
     var b = brouillonReglages;
+    if (DEMO) { if (configLab) configLab.message('info', 'Mode démonstration : rien n\'est enregistré. Dans Grist, les réglages sont enregistrés dans le document.'); return; }
     LISTES_REGLABLES.forEach(function (l) {
       var v = document.getElementById('rg-' + l[0]).value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
       if (!v.length || v.join('|') === DEFAUTS[l[0]].join('|')) delete b.listes[l[0]]; else b.listes[l[0]] = v;

@@ -36,7 +36,7 @@ Pour recueillir des propositions de personnes qui n'ont pas accès au document, 
 
 ## Le régler
 
-L'écran *Réglages* (lien en bas de page) regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
+Le bouton *Configurer* (en haut de l'outil) ouvre une page de configuration unique, en quatre onglets : *Réglages*, *En-tête et pied*, *Aperçu* (le rendu avec les réglages en cours) et *Publication* (qui peut utiliser l'outil, adresse du widget). Elle regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
 
 Chaque consultation se règle dans son onglet *Gérer* : titre, question, présentation, mode de vote, étape, échéance, visibilité des résultats, points par personne, critères de notation et leur poids.
 
