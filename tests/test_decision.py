@@ -76,6 +76,12 @@ with sync_playwright() as p:
     pg.goto(URL + '#/c/1/p/2'); pg.wait_for_selector('.gd-fiche'); pg.screenshot(path='/tmp/decision-fiche.png', full_page=True)
     pg.goto(URL + '#/c/3/resultats'); pg.wait_for_selector('h1'); pg.goto(URL + '#/c/2/resultats'); pg.wait_for_selector('.gd-classement'); pg.screenshot(path='/tmp/decision-resultats.png', full_page=True)
     pg.set_viewport_size({'width': 400, 'height': 800}); pg.goto(URL + '#/c/3'); pg.wait_for_selector('.gd-mur'); pg.screenshot(path='/tmp/decision-mobile.png')
+    # Aperçu réel : l'outil lui-même sous l'en-tête
+    pg.goto(URL); pg.wait_for_selector('.gd-cartes')
+    pg.locator('.cl-barre label', has_text='Aperçu').click(); pg.wait_for_timeout(600)
+    verifier('aperçu réel : l\'outil est dans le cadre de l\'aperçu', pg.locator('.cl-apercu #gd-app .gd-cartes').count() >= 1)
+    pg.locator('.cl-barre label').first.click(); pg.wait_for_timeout(400)
+    verifier('aperçu quitté : l\'outil est revenu dans son onglet', pg.locator('.cl-apercu #gd-app').count() == 0 and pg.locator('#gd-app .gd-cartes').count() >= 1)
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)
     b.close()
