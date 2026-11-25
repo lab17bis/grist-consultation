@@ -6,8 +6,9 @@ ok = ko = 0
 def verifier(nom, cond):
     global ok, ko
     print(('OK   ' if cond else 'ÉCHEC ') + nom); ok += cond; ko += (not cond)
-def ouvrir(b, port, mock, erreurs):
+def ouvrir(b, port, mock, erreurs, init=None):
     pg = b.new_page(viewport={'width': 1280, 'height': 860})
+    if init: pg.add_init_script(init)
     pg.on('pageerror', lambda e: erreurs.append(str(e)))
     mockjs = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'grist-mock.js')).read()
     pg.route('https://docs.getgrist.com/grist-plugin-api.js', lambda r: r.fulfill(status=200, content_type='application/javascript', body=mockjs))
@@ -39,6 +40,19 @@ with sync_playwright() as p:
     pg, f = ouvrir(b, 8781, m2, erreurs)
     f.locator('.gd-cartes').first.wait_for(); pg.wait_for_timeout(300)
     verifier('decision : pas de nouvelle identification au rechargement', len(mock(pg)['tables']['Votants']['lignes']) == 1)
+    doc = mock(pg)['tables']; pg.close()
+    # Ordinateur partagé : le navigateur garde l'identité d'agent@, mais c'est collegue@ qui est connecté.
+    doc['Votants']['lignes'].append({'id': 99, 'Email': 'collegue@exemple.fr', 'Nom': 'Collègue'})
+    m3 = dict(m, tables=doc, utilisateur={'email': 'collegue@exemple.fr', 'nom': 'Collègue'})
+    pg, f = ouvrir(b, 8781, m3, erreurs, "try { localStorage.setItem('gd-moi-doc-test', JSON.stringify({ email: 'agent@exemple.fr', nom: 'Agent Test' })); } catch (e) {}")
+    pg.wait_for_timeout(300)
+    f.locator('a', has_text='Boîte à idées').click(); f.locator('.gd-mur').wait_for()
+    # Avec l'identité gardée, le soutien d'agent@ apparaît comme « le mien » : cliquer le retirerait.
+    f.locator('.gd-prop', has_text='annuaire').locator('[aria-pressed=true]').click()
+    pg.wait_for_timeout(800)
+    v = mock(pg)['tables']['Votes']['lignes']
+    verifier('ordinateur partagé : le vote d\'agent@ n\'est pas retiré par collegue@', any(x['Votant'] == 'agent@exemple.fr' for x in v))
+    verifier('ordinateur partagé : message « la personne connectée a changé »', 'personne connectée a changé' in f.locator('body').inner_text())
     pg.close()
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)

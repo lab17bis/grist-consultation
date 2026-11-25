@@ -155,7 +155,9 @@
   // Identification : la personne ajoute une ligne à Votants, dont les colonnes Email et Nom sont
   // remplies par Grist (formules déclenchées à la création). Le widget relit la ligne pour savoir
   // qui est connecté, puis retire la ligne si la personne était déjà connue.
-  var cleMoi = null;
+  // L'identité gardée dans le navigateur sert à l'affichage ; elle est revérifiée auprès de Grist
+  // avant la première écriture, car un ordinateur partagé peut changer de personne connectée.
+  var cleMoi = null, moiVerifie = false;
   function identifier() {
     if (DEMO || PUBLIC || moi) return Promise.resolve();
     return grist.docApi.getDocName().catch(function () { return 'doc'; }).then(function (nomDoc) {
@@ -163,6 +165,10 @@
       var connu = null;
       try { connu = JSON.parse(localStorage.getItem(cleMoi) || 'null'); } catch (e) { connu = null; }
       if (connu && data.Votants.some(function (v) { return v.Email === connu.email; })) { moi = connu; return null; }
+      return demanderIdentite().then(function () { return charger(); });
+    }).catch(function () { lectureSeule = true; });
+  }
+  function demanderIdentite() {
       return grist.docApi.applyUserActions([['AddRecord', 'Votants', null, {}]]).then(function (res) {
         var id = res.retValues[0];
         return grist.docApi.fetchTable('Votants').then(function (c) {
@@ -170,11 +176,18 @@
           if (!l || !l.Email) throw new Error('identification impossible');
           moi = { email: l.Email, nom: l.Nom || l.Email };
           try { localStorage.setItem(cleMoi, JSON.stringify(moi)); } catch (e) { /* stockage indisponible */ }
+          moiVerifie = true;
           var doublon = lignes.some(function (x) { return x.Email === l.Email && x.id !== id; });
           return doublon ? grist.docApi.applyUserActions([['RemoveRecord', 'Votants', id]]) : null;
         });
-      }).then(function () { return charger(); });
-    }).catch(function () { lectureSeule = true; });
+      });
+  }
+  // Avant la première écriture : confirme l'identité. Si elle a changé, l'action préparée pour
+  // l'ancienne identité est abandonnée (elle pourrait retirer le vote d'une autre personne).
+  function verifierMoi() {
+    if (DEMO || PUBLIC || moiVerifie || !moi) return Promise.resolve(true);
+    var avant = moi.email;
+    return demanderIdentite().then(function () { return moi.email === avant; });
   }
 
   function consultation(id) { return (idx.Consultations || {})[id]; }
@@ -267,11 +280,17 @@
 
   function executer(actions, message, apres) {
     if (!actions.length) return Promise.resolve(rendre());
-    return ecrire(actions).then(function (res) {
+    return verifierMoi().then(function (memePersonne) {
+      if (memePersonne) return ecrire(actions);
+      etat.alerte = { type: 'warning', texte: 'La personne connectée a changé : la page affiche maintenant vos propres votes. Vérifiez votre choix puis recommencez.' };
+      etat.garderAlerte = true;
+      return charger().then(function () { throw null; });
+    }).then(function (res) {
       if (apres) apres(res);
       etat.alerte = message ? { type: 'success', texte: message } : null;
       return DEMO ? null : charger();
     }).then(rendre).catch(function (err) {
+      if (err === null) return rendre();
       etat.alerte = { type: 'error', texte: 'Enregistrement refusé par Grist. Vérifiez vos droits sur le document. (' + ((err && err.message) || err) + ')' };
       rendre();
     });
