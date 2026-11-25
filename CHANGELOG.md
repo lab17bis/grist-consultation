@@ -2,6 +2,11 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-25 (règles d'accès des votes)
+
+### Documentation
+- Nouvelle section « Protéger les votes par des règles d'accès » : quatre règles Grist, vérifiées sur une instance réelle, qui empêchent d'écrire, modifier ou retirer un vote au nom d'une autre personne.
+
 ## 2026-11-25 (audit de sécurité)
 
 ### Sécurité

@@ -77,10 +77,23 @@ Les modes, étapes et visibilités sont utilisés par le code : ne les renommez 
 
 ## Limites
 
-- **Une consultation, pas un scrutin.** Les votes ne sont pas anonymes pour les propriétaires du document, qui voient la table `Votes`. Une personne qui a les droits d'édition peut aussi modifier cette table directement dans Grist. Pour masquer les votes individuels, ajoutez une règle d'accès Grist sur la table `Votes`. Pour une élection, utilisez un outil de vote dédié.
+- **Une consultation, pas un scrutin.** Les votes ne sont pas anonymes pour les propriétaires du document, qui voient la table `Votes`. Sans règle d'accès, une personne qui a les droits d'édition peut modifier cette table directement dans Grist, y compris écrire un vote au nom d'une autre (voir ci-dessous). Pour une élection, utilisez un outil de vote dédié.
 - Dans un document public sans connexion, toutes les personnes anonymes partagent la même identité : le vote n'a pas de sens.
 - Une personne qui vote depuis deux navigateurs est reconnue grâce à son adresse ; le plafond de points est vérifié dans le widget, pas par Grist.
 - Aucun audit RGAA n'a été mené.
+
+## Protéger les votes par des règles d'accès
+
+Recommandé dès que plusieurs personnes votent. Dans Grist : **Règles d'accès** (panneau de gauche), **Ajouter des règles de table**, puis :
+
+| Table | Condition | Permissions | Effet |
+|---|---|---|---|
+| `Votes` | `user.Access != OWNER and newRec.Votant != user.Email` | Refuser *Créer* et *Modifier* | Un vote est toujours enregistré au nom de la personne connectée. |
+| `Votes` | `user.Access != OWNER and rec.Votant != user.Email` | Refuser *Modifier* et *Supprimer* | On ne modifie ni ne retire le vote d'une autre personne. |
+| `Votants` | `user.Access != OWNER and newRec.Email != user.Email` | Refuser *Créer* et *Modifier* | Chaque personne ne s'inscrit qu'à son nom. |
+| `Votants` | `user.Access != OWNER and rec.Email != user.Email` | Refuser *Modifier* et *Supprimer* | On ne modifie pas l'inscription d'une autre personne. |
+
+Les propriétaires du document gardent tous les droits (pour corriger ou nettoyer). Ces règles ont été vérifiées sur une instance Grist réelle : le widget fonctionne normalement, et un vote au nom d'une autre personne est refusé par Grist. Pour masquer en plus les votes individuels, ajoutez une règle de lecture sur la table `Votes`.
 
 ## Version stable et version en cours
 
