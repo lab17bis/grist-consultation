@@ -102,6 +102,21 @@ with sync_playwright() as p:
     dep = [x for x in mock(pg)['tables']['Propositions']['lignes'] if x.get('Titre') == 'Idée avec budget']
     verifier('champs supplémentaires : la valeur est enregistrée dans la colonne', len(dep) == 1 and dep[0].get('Budget_estime') == '1200 euros')
     pg.close()
+    # --- Réglages : ajout d'un champ de proposition, colonne créée à l'enregistrement
+    pg, f = ouvrir(b, 8781, m5, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
+    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
+    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.locator('#nc-label').wait_for()
+    f.locator('#nc-label').fill('Public concerné'); f.locator('#nc-type').select_option('choix')
+    f.locator('#nc-choix').fill('Élèves\nFamilles')
+    f.get_by_role('button', name='Ajouter ce champ').click()
+    f.get_by_text('colonne Public_concerne').wait_for()
+    f.get_by_role('button', name='Enregistrer').first.click()
+    pg.wait_for_timeout(800)
+    cols = mock(pg)['tables']['Propositions']['colonnes']
+    verifier('réglages : colonne du champ « Choix » créée avec ses valeurs', 'Public_concerne' in cols and 'Familles' in (cols['Public_concerne'].get('widgetOptions') or ''))
+    pg.close()
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)
     b.close()

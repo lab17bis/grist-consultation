@@ -10,6 +10,9 @@ Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans ret
 ### Corrigé
 - Réglages : les actions (vote par code, champs) restent actives après un changement de consultation ou un nouveau dessin de l'onglet.
 
+### Tests
+- Nouveau test de l'ajout d'un champ dans les réglages (création de la colonne).
+
 ### Inchangé
 - Sans champ supplémentaire, le dépôt et la fiche sont identiques à avant.
 
