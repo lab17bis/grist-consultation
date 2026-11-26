@@ -38,6 +38,8 @@ Pour recueillir des propositions de personnes qui n'ont pas accès au document, 
 
 Le widget s'ouvre sur une barre d'onglets : *Consultations* (l'outil), puis *Réglages*, *En-tête et pied*, *Aperçu* (le rendu avec les réglages en cours) et *Publication* (qui peut utiliser l'outil, adresse du widget). Elle regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
 
+Dans *Réglages*, la section *Champs supplémentaires des propositions* permet d'ajouter ses propres champs au dépôt (texte court ou long, choix dans une liste, date, nombre ; obligatoires ou non). Chaque champ devient une colonne de la table `Propositions`, créée à l'enregistrement des réglages ; il apparaît dans le formulaire de dépôt et sur la fiche de la proposition. Retirer un champ des réglages ne supprime ni la colonne ni ses données, et un champ dont la colonne a été supprimée dans Grist n'est plus proposé.
+
 Chaque consultation se règle dans son onglet *Gérer* : titre, question, présentation, mode de vote, étape, échéance, visibilité des résultats, points par personne, critères de notation et leur poids.
 
 ## Modèle de données
@@ -45,7 +47,7 @@ Chaque consultation se règle dans son onglet *Gérer* : titre, question, prése
 | Table | Colonnes |
 | --- | --- |
 | `Consultations` | `Titre`, `Question`, `Description`, `Mode` (choix), `Phase` (choix), `Echeance` (date), `Resultats` (choix), `Points` et `Max_par_proposition` (entiers, vote par points), `Config_decision` |
-| `Propositions` | `Consultation` (référence), `Titre`, `Description`, `Type` (choix), `Auteur`, `Structure`, `Lien`, `Image` (adresse d'une image), `Illustration` (pièce jointe), `Statut` (choix), `Suite` (explication de la suite donnée), `Masquee` (case à cocher), `Deposee_par` et `Deposee_le` (remplis par Grist à la création) |
+| `Propositions` | `Consultation` (référence), `Titre`, `Description`, `Type` (choix), `Auteur`, `Structure`, `Lien`, `Image` (adresse d'une image), `Illustration` (pièce jointe), `Statut` (choix), `Suite` (explication de la suite donnée), `Masquee` (case à cocher), vos champs supplémentaires éventuels (une colonne chacun), `Deposee_par` et `Deposee_le` (remplis par Grist à la création) |
 | `Criteres` | `Consultation` (référence), `Nom`, `Description`, `Poids` (nombre) |
 | `Votes` | `Consultation`, `Proposition`, `Critere` (références), `Valeur` (nombre), `Votant` et `Vote_le` (remplis par Grist à la création : `user.Email` et `NOW()`) |
 | `Votants` | `Email` et `Nom` (remplis par Grist à la création) |

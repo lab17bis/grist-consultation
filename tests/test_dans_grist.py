@@ -77,6 +77,31 @@ with sync_playwright() as p:
     texte = f.locator('body').inner_text()
     verifier('vote par code : 2 participants (1 code valide + 1 personne connectée) ; doublon, code inconnu et anonyme sans code ignorés', '2 participants' in texte)
     pg.close()
+    # --- Champs supplémentaires des propositions : formulaire de dépôt, enregistrement dans la colonne, fiche
+    m5 = {'tables': {'Table1': {'colonnes': {'A': {'type': 'Text'}}, 'lignes': []}}, 'table': 'Table1', 'utilisateur': {'email': 'agent@exemple.fr', 'nom': 'Agent Test'}}
+    pg, f = ouvrir(b, 8781, m5, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click()
+    f.locator('.gd-cartes').first.wait_for()
+    doc = mock(pg)['tables']; pg.close()
+    doc['Propositions']['colonnes']['Budget_estime'] = {'type': 'Text'}
+    cfg = {'champsPerso': [{'id': 'Budget_estime', 'label': 'Budget estimé', 'type': 'court', 'requis': True, 'choix': []}, {'id': 'Colonne_absente', 'label': 'Fantôme', 'type': 'court', 'requis': False, 'choix': []}]}
+    doc['Consultations']['colonnes']['Config_consultation'] = {'type': 'Text', 'description': json.dumps(cfg)}
+    pg, f = ouvrir(b, 8781, dict(m5, tables=doc), erreurs)
+    f.locator('.gd-cartes').first.wait_for()
+    f.locator('.gd-cartes a').first.click()
+    f.get_by_role('link', name='Déposer').first.click() if f.get_by_role('link', name='Déposer').count() else f.get_by_role('button', name='Déposer').first.click()
+    f.locator('#d-titre').wait_for()
+    verifier('champs supplémentaires : le champ dont la colonne existe est proposé, pas celui dont la colonne manque', f.locator('#d-Budget_estime').count() == 1 and f.locator('#d-Colonne_absente').count() == 0)
+    f.locator('#d-titre').fill('Idée avec budget'); f.locator('#d-desc').fill('Une description.')
+    f.get_by_role('button', name='Déposer la proposition').click()
+    pg.wait_for_timeout(500)
+    verifier('champs supplémentaires : un champ obligatoire vide bloque le dépôt', 'Budget estimé' in f.locator('body').inner_text() and not any(x.get('Titre') == 'Idée avec budget' for x in mock(pg)['tables']['Propositions']['lignes']))
+    f.locator('#d-Budget_estime').fill('1200 euros')
+    f.get_by_role('button', name='Déposer la proposition').click()
+    pg.wait_for_timeout(800)
+    dep = [x for x in mock(pg)['tables']['Propositions']['lignes'] if x.get('Titre') == 'Idée avec budget']
+    verifier('champs supplémentaires : la valeur est enregistrée dans la colonne', len(dep) == 1 and dep[0].get('Budget_estime') == '1200 euros')
+    pg.close()
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)
     b.close()

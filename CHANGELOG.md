@@ -2,6 +2,17 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (champs supplémentaires)
+
+### Ajouté
+- Champs supplémentaires des propositions (Configurer › Réglages) : texte court ou long, choix dans une liste, date ou nombre, obligatoires ou non. Chaque champ crée une colonne dans `Propositions` à l'enregistrement des réglages, apparaît dans le formulaire de dépôt et sur la fiche de la proposition.
+
+### Corrigé
+- Réglages : les actions (vote par code, champs) restent actives après un changement de consultation ou un nouveau dessin de l'onglet.
+
+### Inchangé
+- Sans champ supplémentaire, le dépôt et la fiche sont identiques à avant.
+
 ## 2026-11-26 (vote public contrôlé)
 
 ### Ajouté

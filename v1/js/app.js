@@ -622,6 +622,7 @@
     var infos = [];
     if (p.Auteur || p.Deposee_par) infos.push(['Proposée par', p.Auteur || p.Deposee_par]);
     if (p.Structure) infos.push(['Structure', p.Structure]);
+    champsPerso().forEach(function (c) { var v = valeurPerso(c, p); if (v) infos.push([c.label, v]); });
     if (p.Deposee_le) infos.push(['Déposée le', new Date(p.Deposee_le * 1000).toLocaleDateString('fr-FR')]);
     var lien = adresse(p.Lien);
     var h = filAriane([['Consultations', '#/'], [c.Titre || 'Consultation', '#/c/' + c.id], [p.Titre || 'Proposition', '']]) + blocAlerte() +
@@ -656,6 +657,7 @@
       champ('d-desc', 'Description', b.Description || '', { cle: cle, champ: 'Description', multiligne: true, lignes: 6, requis: true, large: true, aide: 'Le constat, ce que vous proposez ou ce que vous avez réalisé, ce que cela change.' }) +
       champ('d-structure', 'Structure ou service', b.Structure || '', { cle: cle, champ: 'Structure' }) +
       champ('d-lien', 'Lien pour en savoir plus', b.Lien || '', { cle: cle, champ: 'Lien', type: 'url', aide: 'Adresse d\'un document, d\'une page ou d\'une vidéo. Facultatif.' }) +
+      champsPersoDepot(b, cle) +
       '<div class="fr-upload-group gd-large"><label class="fr-label" for="d-image">Image ou photo<span class="fr-hint-text">Facultatif. PNG, JPEG, GIF ou WebP, 2 Mo au plus. N\'ajoutez pas de photo de personnes sans leur accord.</span></label>' +
       '<input class="fr-upload" type="file" id="d-image" accept="image/png,image/jpeg,image/gif,image/webp"></div>' +
       '</div><ul class="fr-btns-group fr-btns-group--inline-md"><li><button type="submit" class="fr-btn">Déposer la proposition</button></li></ul></form>';
@@ -765,7 +767,7 @@
       h += '<div class="fr-input-group"><label class="fr-label" for="rg-' + l[0] + '">' + esc(l[1]) + '<span class="fr-hint-text">Colonne ' + l[2] + '.' + l[3] + '. ' + esc(l[4]) + '</span></label>' +
         '<textarea class="fr-input" rows="5" id="rg-' + l[0] + '">' + esc((b.listes[l[0]] && b.listes[l[0]].length ? b.listes[l[0]] : DEFAUTS[l[0]]).join('\n')) + '</textarea></div>';
     });
-    return h + blocVoteControle() + '</div>';
+    return h + blocChampsPerso() + blocVoteControle() + '</div>';
   }
   // --- Vote public contrôlé : codes personnels -------------------------------
 
@@ -834,12 +836,32 @@
       '<p class="fr-text--sm"><strong>Protégez les codes avec les règles d\'accès de Grist</strong> : refusez la lecture de la table <code>' + TABLE_CODES + '</code> et de la colonne <code>Votes.Code</code> aux personnes qui ne sont pas propriétaires. Sinon un visiteur pourrait relire les codes et voter à la place d\'un autre. Dans le formulaire de vote, demandez les champs Consultation, Proposition, Valeur et Code.</p>';
     return h;
   }
+  function redessinerReglages() { if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } }
   function brancherVoteControle(zone) {
     vc.zone = zone;
-    var sel = zone.querySelector('#vc-consultation');
-    if (sel) sel.addEventListener('change', function () { vc.consultation = num(sel.value); vc.message = null; zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); });
+    if (zone.__brancheGD) return;   // les écouteurs sont posés une seule fois : le contenu de la zone, lui, est redessiné
+    zone.__brancheGD = true;
+    zone.addEventListener('change', function (e) {
+      var t = e.target;
+      if (t.id === 'vc-consultation') { vc.consultation = num(t.value); vc.message = null; redessinerReglages(); return; }
+      if (t.hasAttribute('data-nc')) {
+        nouveauChamp[t.getAttribute('data-nc')] = t.type === 'checkbox' ? t.checked : t.value;
+        if (t.getAttribute('data-nc') === 'type') redessinerReglages();
+        return;
+      }
+      if (t.hasAttribute('data-cp-requis')) {
+        var cp = (brouillonReglages.champsPerso || []).filter(function (x) { return x.id === t.getAttribute('data-cp-requis'); })[0];
+        if (cp) { cp.requis = t.checked; if (configLab) configLab.modifie(true); }
+      }
+    });
+    zone.addEventListener('input', function (e) { var t = e.target; if (t.hasAttribute('data-nc') && t.type !== 'checkbox' && t.tagName !== 'SELECT') nouveauChamp[t.getAttribute('data-nc')] = t.value; });
     zone.addEventListener('click', function (e) {
-      var b = e.target.closest('button[data-vc]'); if (!b || b.disabled) return;
+      var b = e.target.closest('button[data-vc], button[data-cp]'); if (!b || b.disabled) return;
+      if (b.hasAttribute('data-cp')) {
+        if (b.getAttribute('data-cp') === 'ajouter') ajouterChampPerso();
+        else { brouillonReglages.champsPerso = (brouillonReglages.champsPerso || []).filter(function (x) { return x.id !== b.getAttribute('data-id'); }); if (configLab) configLab.modifie(true); redessinerReglages(); }
+        return;
+      }
       var a = b.getAttribute('data-vc');
       if (a === 'activer') activerVoteControle(b);
       else if (a === 'generer') genererCodes();
@@ -848,7 +870,7 @@
   }
   function rafraichirVC(msg) {
     vc.message = msg || null;
-    return charger().then(function () { if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } });
+    return charger().then(redessinerReglages);
   }
   function activerVoteControle(b) {
     b.disabled = true;
@@ -866,7 +888,7 @@
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
       });
     }).then(function () { return rafraichirVC('Vote par code activé.'); })
-      .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } });
+      .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; redessinerReglages(); });
   }
   function genererCodes() {
     var cid = vc.consultation; if (!cid) return;
@@ -876,7 +898,7 @@
     var acts = [];
     for (var i = 0; i < n; i++) acts.push(['AddRecord', TABLE_CODES, null, { Consultation: cid, Destinataire: dest[i] || '', Code: nouveauCode(deja) }]);
     grist.docApi.applyUserActions(acts).then(function () { return rafraichirVC(n + ' code' + (n > 1 ? 's' : '') + ' créé' + (n > 1 ? 's' : '') + '.'); })
-      .catch(function (err) { vc.message = 'Création refusée par Grist. (' + ((err && err.message) || err) + ')'; zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); });
+      .catch(function (err) { vc.message = 'Création refusée par Grist. (' + ((err && err.message) || err) + ')'; redessinerReglages(); });
   }
   function telechargerCodes() {
     var lien = lienVote(consultation(vc.consultation)) || '';
@@ -885,6 +907,85 @@
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'codes-de-vote.csv';
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  // --- Champs personnalisés des propositions ---------------------------------
+
+  var TYPES_CHAMP = [['court', 'Texte court'], ['long', 'Texte long'], ['choix', 'Choix dans une liste'], ['date', 'Date'], ['nombre', 'Nombre']];
+  var nouveauChamp = { label: '', type: 'court', choix: '', requis: false };
+  // Champs dont la colonne existe dans la table Propositions.
+  function champsPerso() {
+    return (Array.isArray(reglages.champsPerso) ? reglages.champsPerso : []).filter(function (c) {
+      return c && /^[A-Za-z][A-Za-z0-9_]*$/.test(c.id || '') && c.label && (DEMO || colonne('Propositions', c.id));
+    });
+  }
+  function identifiantChamp(lib) {
+    var id = String(lib || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    if (!id) return '';
+    id = id.charAt(0).toUpperCase() + id.slice(1);
+    return /^[0-9]/.test(id) ? 'C_' + id : id;
+  }
+  function valeurPerso(c, p) {
+    var v = p[c.id];
+    if (v === null || v === undefined || v === '') return '';
+    return c.type === 'date' ? dateTexte(v) : String(v);
+  }
+  function champsPersoDepot(b, cle) {
+    return champsPerso().map(function (c) {
+      var id = 'd-' + c.id, o = { cle: cle, champ: c.id, requis: !!c.requis, large: c.type === 'long' };
+      if (c.type === 'choix') return select(id, c.label, b[c.id] || '', c.choix || [], { cle: cle, champ: c.id, vide: 'Choisir…' });
+      if (c.type === 'long') { o.multiligne = true; o.lignes = 4; }
+      if (c.type === 'date') o.type = 'date';
+      if (c.type === 'nombre') o.type = 'number';
+      return champ(id, c.label, b[c.id] || '', o);
+    }).join('');
+  }
+  function blocChampsPerso() {
+    var b = brouillonReglages; b.champsPerso = b.champsPerso || [];
+    var h = '<h2 class="fr-h5 fr-mt-4w">Champs supplémentaires des propositions</h2>' +
+      '<p class="fr-text--sm">Ajoutez vos propres champs au dépôt d\'une proposition (par exemple « Budget estimé » ou « Public concerné »). Chaque champ devient une colonne de la table <code>Propositions</code>, créée à l\'enregistrement des réglages ; il apparaît dans le formulaire de dépôt et sur la fiche de la proposition. Retirer un champ des réglages ne supprime pas la colonne ni ses données.</p>';
+    if (!b.champsPerso.length) h += '<p class="fr-text--sm"><em>Aucun champ supplémentaire.</em></p>';
+    b.champsPerso.forEach(function (c) {
+      var t = TYPES_CHAMP.filter(function (x) { return x[0] === c.type; })[0];
+      h += '<div class="gd-champ-perso"><p class="fr-mb-1v"><strong>' + esc(c.label) + '</strong> · ' + esc(t ? t[1] : c.type) + ' · colonne <code>' + esc(c.id) + '</code>' +
+        (DEMO || colonne('Propositions', c.id) ? '' : ' <span class="fr-badge fr-badge--sm fr-badge--info">Créée à l\'enregistrement</span>') + '</p>' +
+        '<div class="fr-checkbox-group fr-checkbox-group--sm"><input type="checkbox" id="cp-req-' + esc(c.id) + '" data-cp-requis="' + esc(c.id) + '"' + (c.requis ? ' checked' : '') + '><label class="fr-label" for="cp-req-' + esc(c.id) + '">Obligatoire au dépôt</label></div>' +
+        '<button type="button" class="fr-btn fr-btn--sm fr-btn--tertiary" data-cp="retirer" data-id="' + esc(c.id) + '">Retirer des réglages</button></div>';
+    });
+    var n = nouveauChamp;
+    h += '<h3 class="fr-h6 fr-mt-2w">Ajouter un champ</h3><div class="gd-champ-perso">' +
+      '<div class="fr-input-group"><label class="fr-label" for="nc-label">Libellé</label><input class="fr-input" id="nc-label" data-nc="label" value="' + esc(n.label) + '"></div>' +
+      '<div class="fr-select-group"><label class="fr-label" for="nc-type">Type</label><select class="fr-select" id="nc-type" data-nc="type">' +
+      TYPES_CHAMP.map(function (t) { return '<option value="' + t[0] + '"' + (t[0] === n.type ? ' selected' : '') + '>' + t[1] + '</option>'; }).join('') + '</select></div>' +
+      (n.type === 'choix' ? '<div class="fr-input-group"><label class="fr-label" for="nc-choix">Valeurs possibles<span class="fr-hint-text">Une par ligne.</span></label><textarea class="fr-input" rows="3" id="nc-choix" data-nc="choix">' + esc(n.choix) + '</textarea></div>' : '') +
+      '<div class="fr-checkbox-group fr-checkbox-group--sm"><input type="checkbox" id="nc-requis" data-nc="requis"' + (n.requis ? ' checked' : '') + '><label class="fr-label" for="nc-requis">Obligatoire au dépôt</label></div>' +
+      '<button type="button" class="fr-btn fr-btn--sm fr-mt-1w" data-cp="ajouter">Ajouter ce champ</button></div>';
+    return h;
+  }
+  function ajouterChampPerso() {
+    var b = brouillonReglages; b.champsPerso = b.champsPerso || [];
+    var n = nouveauChamp, label = String(n.label || '').trim();
+    function refus(t) { if (configLab) configLab.message('error', t); }
+    if (!label) { refus('Indiquez le libellé du champ.'); return; }
+    var id = identifiantChamp(label);
+    if (!id) { refus('Le libellé doit contenir au moins une lettre ou un chiffre.'); return; }
+    if (colonne('Propositions', id) || b.champsPerso.some(function (c) { return c.id === id; })) { refus('Le nom de colonne « ' + id + ' » est déjà pris : choisissez un autre libellé.'); return; }
+    var choix = String(n.choix || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+    if (n.type === 'choix' && !choix.length) { refus('Indiquez au moins une valeur possible pour un champ « Choix ».'); return; }
+    b.champsPerso.push({ id: id, label: label, type: n.type, requis: !!n.requis, choix: n.type === 'choix' ? choix : [] });
+    nouveauChamp = { label: '', type: 'court', choix: '', requis: false };
+    if (configLab) { configLab.modifie(true); configLab.message('info', 'Champ « ' + label + ' » ajouté. Enregistrez les réglages pour créer la colonne dans Grist.'); }
+    redessinerReglages();
+  }
+  function colonnesChampsPerso(b) {
+    var acts = [];
+    (b.champsPerso || []).forEach(function (c) {
+      if (!c || !/^[A-Za-z][A-Za-z0-9_]*$/.test(c.id || '') || colonne('Propositions', c.id)) return;
+      var d = { type: c.type === 'date' ? 'Date' : c.type === 'nombre' ? 'Numeric' : c.type === 'choix' ? 'Choice' : 'Text', label: c.label };
+      if (c.type === 'choix') d.widgetOptions = JSON.stringify({ choices: c.choix || [] });
+      acts.push(['AddColumn', 'Propositions', c.id, d]);
+    });
+    return acts;
   }
 
   var configLab = null, avantApercu = null;
@@ -931,7 +1032,7 @@
       var v = document.getElementById('rg-' + l[0]).value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
       if (!v.length || v.join('|') === DEFAUTS[l[0]].join('|')) delete b.listes[l[0]]; else b.listes[l[0]] = v;
     });
-    var actions = [];
+    var actions = colonnesChampsPerso(b);
     var nomCol = meta.nomColConfig || NOM_COLONNE_CONFIG;
     if (!meta.colConfig) actions.push(['AddColumn', 'Consultations', nomCol, { type: 'Text', label: nomCol }]);
     actions.push(['ModifyColumn', 'Consultations', nomCol, { description: JSON.stringify(b) }]);
@@ -943,6 +1044,8 @@
       actions.push(['ModifyColumn', l[2], l[3], { widgetOptions: JSON.stringify(o) }]);
     });
     grist.docApi.applyUserActions(actions).then(function () {
+      return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) { meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]); });
+    }).then(function () {
       meta.colConfig = true; meta.nomColConfig = nomCol; appliquerReglages(b);
       if (configLab) { configLab.enregistre(); configLab.message('success', 'Réglages enregistrés.'); }
       rendre();
@@ -1141,10 +1244,16 @@
     if (type === 'depot') {
       cle = 'depot-' + cid; b = brouillon(cle);
       if (!texte(b.Titre) || !texte(b.Description)) { etat.alerte = { type: 'error', texte: 'Indiquez un titre et une description.' }; rendre(); return; }
+      var manques = champsPerso().filter(function (c) { return c.requis && !texte(b[c.id]); }).map(function (c) { return '« ' + c.label + ' »'; });
+      if (manques.length) { etat.alerte = { type: 'error', texte: 'Renseignez : ' + manques.join(', ') + '.' }; rendre(); return; }
       var fichier = (document.getElementById('d-image').files || [])[0];
       if (fichier && fichier.size > 2000000) { etat.alerte = { type: 'error', texte: 'Image trop lourde : 2 Mo au plus.' }; rendre(); return; }
       var champs = { Consultation: cid, Titre: texte(b.Titre), Description: texte(b.Description), Type: b.Type || L.types[0], Auteur: texte(b.Auteur), Structure: texte(b.Structure),
         Lien: texte(b.Lien), Statut: L.statuts[0] };
+      champsPerso().forEach(function (c) {
+        var v = texte(b[c.id]); if (!v) return;
+        champs[c.id] = c.type === 'date' ? saisieVersDate(v) : c.type === 'nombre' ? (isNaN(Number(v)) ? null : Number(v)) : v;
+      });
       var image = !fichier ? Promise.resolve(null) : DEMO ? window.PageDSFR.lireImage(fichier, 2000000).then(function (u) { champs.Image = u; }) :
         envoyerPiece(fichier).then(function (id) { champs.Illustration = ['L', id]; });
       image.then(function () {
