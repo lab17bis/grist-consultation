@@ -100,7 +100,8 @@ La vérification est faite par Grist (colonnes calculées), donc aussi pour les 
 
 **À faire dans Grist** :
 1. Règles d'accès : refuser la lecture de la table `Codes_vote` et de la colonne `Votes.Code` à qui n'est pas propriétaire. Sans cela, un visiteur peut relire les codes et voter à la place d'un autre.
-2. Formulaire de vote : un formulaire Grist sur la table `Votes` avec les champs Consultation, Proposition, Valeur et Code. Son adresse se renseigne dans l'onglet Publication.
+2. Page de vote : un [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) branché sur la table `Votes`, avec les questions Consultation, Proposition, Valeur et Code. L'adresse publique du questionnaire se renseigne dans l'onglet Publication (champ « lien de vote »). Les personnes ne voient que la page au design de l'État, jamais l'interface native de Grist.
+3. Assemblage : le [portail](https://github.com/lab17bis/grist-portail) affiche, sous une seule adresse, une page pour la consultation (la page publique de cet outil) et une page pour le vote (le questionnaire).
 
 **Limites** : le code identifie un droit de vote, pas une personne. Qui transmet son code transmet son vote. Le vote reste non anonyme pour les propriétaires du document, qui peuvent relier un code à son destinataire. Une erreur de saisie sur une proposition ne peut pas être corrigée par la personne : le premier vote reste retenu ; un propriétaire peut supprimer la ligne. Les formulaires publics Grist n'ont pas été testés avec ce contrôle : seule la validation des votes par Grist l'a été (doublons, codes inconnus, plafonds, consultations croisées).
 
@@ -171,7 +172,7 @@ Grist, widget Grist, widget-outil, consultation, boîte à idées, budget partic
 
 ## Page publique
 
-Paramètres de l'adresse : `public=1&doc=<lien>&table=Consultations`. La table `Votants` n'est jamais lue et les votants des votes sont remplacés par un numéro. Voter et déposer une proposition se font par un lien de questionnaire, à indiquer dans l'onglet Publication (champ « lien de vote »). Si une table lisible manque, la page l'indique au lieu de proposer l'installation de l'outil.
+Paramètres de l'adresse : `public=1&doc=<lien>&table=Consultations`. La table `Votants` n'est jamais lue et les votants des votes sont remplacés par un numéro. Voter et déposer une proposition se font par un questionnaire (grist-questionnaire), à indiquer dans l'onglet Publication (champ « lien de vote »). Si une table lisible manque, la page l'indique au lieu de proposer l'installation de l'outil.
 
 L'onglet **Publication** construit le lien d'une page publique : collez le lien du document Grist partagé en lecture publique (*Partager › Accès public : Lecteur*), puis copiez ou ouvrez le lien obtenu. La page est en lecture seule, sans compte, et n'écrit jamais dans le document. L'option `integre=1` retire l'en-tête et le pied de page pour intégrer la page dans un autre site ou dans le [portail](https://github.com/lab17bis/grist-portail).
 

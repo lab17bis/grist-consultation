@@ -2,6 +2,11 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (documentation du vote public)
+
+### Corrigé
+- README : le vote public passe par un questionnaire (grist-questionnaire) branché sur la table `Votes`, pas par un formulaire natif de Grist ; le portail assemble la page de consultation et la page de vote sous une seule adresse. Aucun changement de code.
+
 ## 2026-11-26 (champs supplémentaires)
 
 ### Ajouté
