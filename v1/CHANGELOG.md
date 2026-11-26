@@ -5,7 +5,7 @@ Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans ret
 ## 2026-11-26 (vérifications)
 
 ### Vérifié
-- Dépôt anonyme par formulaire public Grist : un envoi sans connexion, depuis une page d'un autre domaine, est enregistré, y compris dans les colonnes ajoutées au formulaire après sa publication. Documentation mise à jour, aucun changement de code.
+- Dépôt anonyme de bout en bout sur un document installé par le widget : 17 envois sans connexion par un formulaire Grist publié sur la table Votes, tous classés comme attendus par les colonnes `Bulletin` et `Valide`. Documentation mise à jour, aucun changement de code.
 
 ## 2026-11-26 (niveaux d'identification)
 
