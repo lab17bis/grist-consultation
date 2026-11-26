@@ -2,6 +2,11 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (deux façons de voter)
+
+### Ajouté
+- README : comparaison du vote identifié (dans Grist) et du vote public par code ; ce que la page publique montre ou masque ; adresse `?style=light` pour afficher la page du widget sans les menus Grist.
+
 ## 2026-11-26 (documentation du vote public)
 
 ### Corrigé

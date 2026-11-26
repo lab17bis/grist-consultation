@@ -84,6 +84,17 @@ Les modes, étapes et visibilités sont utilisés par le code : ne les renommez 
 - Une personne qui vote depuis deux navigateurs est reconnue grâce à son adresse ; le plafond de points est vérifié dans le widget, pas par Grist.
 - Aucun audit RGAA n'a été mené.
 
+## Deux façons de voter
+
+| | Vote identifié | Vote public par code |
+|---|---|---|
+| Pour qui | Personnes avec un compte, invitées en éditeur | Personnes sans compte Grist |
+| Où | Dans le widget, dans l'interface Grist | Dans une page de vote publique (grist-questionnaire) |
+| Qui est reconnu | L'adresse de la personne, inscrite par Grist | Un code personnel (droit de vote, pas une personne) |
+| Doublons | Évités par les règles d'accès recommandées | Évités par les colonnes calculées de Grist |
+
+La page publique du widget ne permet pas de voter : elle est en lecture seule. Pour envoyer une personne voter directement dans Grist, sans les menus du document, ajoutez `?style=light` à l'adresse de la page du widget.
+
 ## Vote public contrôlé par code personnel
 
 Pour un vote ouvert au public sans compte Grist, chaque personne autorisée reçoit un **code personnel** et le saisit dans le formulaire de vote. L'outil le vérifie et évite les doublons :
@@ -175,6 +186,8 @@ Grist, widget Grist, widget-outil, consultation, boîte à idées, budget partic
 Paramètres de l'adresse : `public=1&doc=<lien>&table=Consultations`. La table `Votants` n'est jamais lue et les votants des votes sont remplacés par un numéro. Voter et déposer une proposition se font par un questionnaire (grist-questionnaire), à indiquer dans l'onglet Publication (champ « lien de vote »). Si une table lisible manque, la page l'indique au lieu de proposer l'installation de l'outil.
 
 L'onglet **Publication** construit le lien d'une page publique : collez le lien du document Grist partagé en lecture publique (*Partager › Accès public : Lecteur*), puis copiez ou ouvrez le lien obtenu. La page est en lecture seule, sans compte, et n'écrit jamais dans le document. L'option `integre=1` retire l'en-tête et le pied de page pour intégrer la page dans un autre site ou dans le [portail](https://github.com/lab17bis/grist-portail).
+
+Ce que la page publique montre : les consultations, les propositions non masquées (la case `Masquee` les retire) avec leur statut et leur suite, et les résultats selon le réglage de chaque consultation. Avec *Après avoir voté*, les résultats n'apparaissent qu'à la clôture, car la page ne sait pas qui a voté. Elle ne montre ni la table `Votants`, ni les codes ; chaque votant y devient un numéro.
 
 Le partage en lecture publique rend lisibles **toutes** les tables du document, pas seulement celles que la page affiche. Pour masquer une table ou une colonne au public, utilisez les règles d'accès de Grist, par exemple avec la condition `not user.IsLoggedIn` (lecture refusée). La page tolère une table masquée. Testez en navigation privée avant de diffuser le lien.
 
