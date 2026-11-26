@@ -102,3 +102,4 @@ body { background: var(--background-default-grey); color: var(--text-default-gre
 
 /* Champs supplémentaires des propositions (réglages) */
 .gd-champ-perso { border: 1px solid var(--border-default-grey, #ddd); border-radius: .25rem; padding: .75rem 1rem; margin-bottom: .75rem; }
+.gd-code { font-family: monospace; font-size: 1.125rem; letter-spacing: 0.1em; }

@@ -117,6 +117,49 @@ with sync_playwright() as p:
     cols = mock(pg)['tables']['Propositions']['colonnes']
     verifier('réglages : colonne du champ « Choix » créée avec ses valeurs', 'Public_concerne' in cols and 'Familles' in (cols['Public_concerne'].get('widgetOptions') or ''))
     pg.close()
+    # --- Niveaux d'identification du vote public : activation, changement de niveau, code commun
+    pg, f = ouvrir(b, 8781, m5, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
+    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
+    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.get_by_role('button', name='Activer le contrôle du vote').click()
+    f.locator('#vc-niveau').wait_for()
+    d = mock(pg)['tables']
+    verifier('niveaux : colonnes Identification, Courriel, Bulletin (texte) et table des codes créées',
+             'Identification' in d['Consultations']['colonnes'] and 'Courriel' in d['Votes']['colonnes'] and d['Votes']['colonnes']['Bulletin']['type'] == 'Text' and 'Codes_vote' in d)
+    verifier('niveaux : les cinq niveaux sont proposés', f.locator('#vc-niveau option').count() == 5)
+    f.locator('#vc-niveau').select_option('Code commun')
+    f.get_by_role('button', name='Créer le code commun').wait_for()
+    verifier('niveaux : niveau enregistré sur la consultation', mock(pg)['tables']['Consultations']['lignes'][0].get('Identification') == 'Code commun')
+    f.get_by_role('button', name='Créer le code commun').click()
+    f.locator('.gd-code').wait_for()
+    cc = [x for x in mock(pg)['tables']['Codes_vote']['lignes'] if x.get('Destinataire') == 'Code commun']
+    verifier('code commun : une ligne dédiée, 8 caractères', len(cc) == 1 and len(cc[0]['Code']) == 8)
+    f.get_by_role('button', name='Changer le code commun').click(); pg.wait_for_timeout(300)
+    verifier('code commun : changé sans doublon de ligne', len([x for x in mock(pg)['tables']['Codes_vote']['lignes'] if x.get('Destinataire') == 'Code commun']) == 1)
+    f.locator('#vc-niveau').select_option('Courriel déclaré'); pg.wait_for_timeout(300)
+    verifier('courriel déclaré : consigne et limite affichées', 'Courriel (obligatoire)' in f.locator('body').inner_text() and 'pas vérifiée' in f.locator('body').inner_text())
+    f.locator('#vc-niveau').select_option('Code individuel'); pg.wait_for_timeout(300)
+    f.locator('#vc-nombre').fill('3'); f.get_by_role('button', name='Créer les codes').click(); pg.wait_for_timeout(500)
+    verifier('code individuel : trois codes créés, sans toucher au code commun', len([x for x in mock(pg)['tables']['Codes_vote']['lignes'] if x.get('Destinataire') != 'Code commun']) == 3)
+    pg.close()
+    # Mise à jour d'un contrôle installé avant les niveaux (Bulletin numérique)
+    pg, f = ouvrir(b, 8781, m5, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
+    doc = mock(pg)['tables']; pg.close()
+    doc['Votes']['colonnes']['Code'] = {'type': 'Text'}
+    doc['Votes']['colonnes']['Bulletin'] = {'type': 'Int', 'isFormula': True, 'formula': 'ancienne'}
+    doc['Votes']['colonnes']['Valide'] = {'type': 'Bool', 'isFormula': True, 'formula': 'x'}
+    doc['Codes_vote'] = {'colonnes': {'Consultation': {'type': 'Ref:Consultations'}, 'Destinataire': {'type': 'Text'}, 'Code': {'type': 'Text'}}, 'lignes': []}
+    pg, f = ouvrir(b, 8781, dict(m5, tables=doc), erreurs)
+    f.locator('.gd-cartes').first.wait_for()
+    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
+    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.get_by_role('button', name='Mettre à jour le contrôle du vote').click()
+    f.locator('#vc-niveau').wait_for()
+    d = mock(pg)['tables']
+    verifier('mise à jour : Bulletin devient du texte avec la nouvelle formule, sans perdre les colonnes', d['Votes']['colonnes']['Bulletin']['type'] == 'Text' and 'Codes_vote' in d['Votes']['colonnes']['Bulletin']['formula'] and 'Courriel' in d['Votes']['colonnes'])
+    pg.close()
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)
     b.close()

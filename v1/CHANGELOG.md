@@ -2,6 +2,30 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (niveaux d'identification)
+
+### Ajouté
+- Cinq niveaux d'identification du vote public, au choix par consultation : ouvert, courriel déclaré, code commun, code individuel, compte Grist. Interface dans *Réglages*, avec pour chaque niveau ce qu'il garantit, pourquoi le choisir et sa limite.
+- Code commun : un seul code pour tout le groupe, créé et changé depuis les réglages, stocké dans la table des codes (jamais lu par la page publique).
+- Courriel déclaré : un vote retenu par adresse (colonne `Votes.Courriel`).
+- Bouton *Mettre à jour le contrôle du vote* pour les documents installés avant les niveaux : la colonne `Bulletin` devient du texte et reçoit la formule d'identité ; les données ne sont pas touchées.
+- Texte d'appel au vote de la page publique adapté au niveau choisi.
+
+### Modifié
+- La colonne `Votes.Bulletin` est désormais une clé de texte (`c:12`, `m:adresse`, `u:adresse`, `o:45`) au lieu d'un numéro ; la colonne `Codes_vote.Utilise` suit.
+- Sans niveau choisi, le comportement reste celui d'avant (code individuel quand le contrôle est installé).
+- Vérifié dans un vrai document Grist : 26 votes d'essai répartis sur les cinq niveaux et un vote par points.
+
+## 2026-11-26 (deux façons de voter)
+
+### Ajouté
+- README : comparaison du vote identifié (dans Grist) et du vote public par code ; ce que la page publique montre ou masque ; adresse `?style=light` pour afficher la page du widget sans les menus Grist.
+
+## 2026-11-26 (documentation du vote public)
+
+### Corrigé
+- README : le vote public passe par un questionnaire (grist-questionnaire) branché sur la table `Votes`, pas par un formulaire natif de Grist ; le portail assemble la page de consultation et la page de vote sous une seule adresse. Aucun changement de code.
+
 ## 2026-11-26 (champs supplémentaires)
 
 ### Ajouté
@@ -9,6 +33,9 @@ Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans ret
 
 ### Corrigé
 - Réglages : les actions (vote par code, champs) restent actives après un changement de consultation ou un nouveau dessin de l'onglet.
+
+### Tests
+- Nouveau test de l'ajout d'un champ dans les réglages (création de la colonne).
 
 ### Inchangé
 - Sans champ supplémentaire, le dépôt et la fiche sont identiques à avant.

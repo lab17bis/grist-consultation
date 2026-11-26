@@ -95,26 +95,35 @@ Les modes, étapes et visibilités sont utilisés par le code : ne les renommez 
 
 La page publique du widget ne permet pas de voter : elle est en lecture seule. Pour envoyer une personne voter directement dans Grist, sans les menus du document, ajoutez `?style=light` à l'adresse de la page du widget.
 
-## Vote public contrôlé par code personnel
+## Identifier les votes sur la page publique
 
-Pour un vote ouvert au public sans compte Grist, chaque personne autorisée reçoit un **code personnel** et le saisit dans le formulaire de vote. L'outil le vérifie et évite les doublons :
+Sur une page publique, Grist ne sait pas qui vote. Le niveau d'identification se choisit **consultation par consultation** (*Configurer › Réglages › Identification des votes sur la page publique*, colonne `Consultations.Identification`). Un vote non reconnu est ignoré. Les cinq niveaux, du plus ouvert au plus strict :
 
-- un **code inconnu** est ignoré, un **vote sans code** aussi ;
-- un code ne compte qu'**une fois par proposition** (et par critère en notation) : le premier vote est retenu, les suivants sont ignorés ;
-- le **plafond de points** et le maximum par proposition sont vérifiés par Grist, pas seulement par le widget ; en choix unique, seule la première voix compte ;
+| Niveau | Ce que la personne fait | Pour quel usage | Limite |
+| --- | --- | --- | --- |
+| **Ouvert** | Rien | Sondage d'opinion sans enjeu | Doublons et envois automatiques possibles ; quotas valables par envoi seulement |
+| **Courriel déclaré** | Saisit son adresse ; un vote retenu par adresse | Décourager les doublons maladroits sans fabriquer de codes | Adresse non vérifiée : on peut en inventer ou emprunter celle d'une autre personne |
+| **Code commun** | Saisit le code donné à tout le groupe | Réserver le vote à un groupe fermé sans liste nominative | Le code filtre qui vote, pas combien de fois ; un code qui circule ouvre le vote |
+| **Code individuel** | Saisit son code personnel, à usage unique par proposition | Vote nominatif ou à enjeu | Fabriquer et distribuer les codes, protéger leur table |
+| **Compte Grist** | Se connecte à Grist | Garantie la plus élevée : l'identité est celle du compte | Compte et accès au document nécessaires ; ce n'est plus une page publique |
+
+Ce que Grist contrôle dans tous les cas (colonnes calculées `Bulletin` et `Valide`, donc aussi pour les votes déposés par un formulaire Grist) :
+
+- un votant ne compte qu'**une fois par proposition** (et par critère en notation) : le premier vote est retenu, les suivants sont ignorés ;
+- le **plafond de points** et le maximum par proposition ; en choix unique, seule la première voix compte ;
 - un code ne vaut que pour **sa consultation** ;
-- le code est saisi sans tenir compte des majuscules, des espaces ni du tiret.
+- le code est saisi sans tenir compte des majuscules, des espaces ni du tiret ; l'adresse, sans tenir compte des majuscules.
 
-La vérification est faite par Grist (colonnes calculées), donc aussi pour les votes déposés par un formulaire Grist. Le widget ne lit que le résultat de la vérification.
+Aux niveaux **Ouvert** et **Code commun**, chaque envoi est un votant : on ne peut pas limiter le nombre de voix par personne, seulement par envoi.
 
-**Mise en place** (par un propriétaire du document) : *Configurer › Réglages › Vote public contrôlé*, bouton *Activer le vote par code*. L'outil ajoute la table `Codes_vote` et, dans `Votes`, les colonnes `Code`, `Bulletin` et `Valide`. Les données existantes ne sont pas modifiées. Ensuite, par consultation : saisir une liste de destinataires (un code par ligne) ou un nombre de codes anonymes, *Créer les codes*, puis *Télécharger la liste (CSV)* pour envoyer chaque code à son destinataire (publipostage). L'outil n'envoie aucun message.
+**Mise en place** (par un propriétaire du document) : bouton *Activer le contrôle du vote* (ou *Mettre à jour le contrôle du vote* pour un document installé avant les niveaux). L'outil ajoute la table `Codes_vote`, la colonne `Identification` dans `Consultations` et, dans `Votes`, les colonnes `Code`, `Courriel`, `Bulletin` et `Valide`. Les données existantes ne sont pas modifiées. Ensuite, par consultation : choisir le niveau ; en *Code commun*, créer le code ; en *Code individuel*, saisir une liste de destinataires (un code par ligne) ou un nombre de codes anonymes, *Créer les codes*, puis *Télécharger la liste (CSV)* pour envoyer chaque code à son destinataire. L'outil n'envoie aucun message.
 
 **À faire dans Grist** :
-1. Règles d'accès : refuser la lecture de la table `Codes_vote` et de la colonne `Votes.Code` à qui n'est pas propriétaire. Sans cela, un visiteur peut relire les codes et voter à la place d'un autre.
-2. Page de vote : un [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) branché sur la table `Votes`, avec les questions Consultation, Proposition, Valeur et Code. L'adresse publique du questionnaire se renseigne dans l'onglet Publication (champ « lien de vote »). Les personnes ne voient que la page au design de l'État, jamais l'interface native de Grist.
+1. Règles d'accès : refuser la lecture de la table `Codes_vote` et des colonnes `Votes.Code`, `Votes.Courriel` et `Votes.Bulletin` à qui n'est pas propriétaire. Sans cela, un visiteur peut relire les codes ou les adresses. Pour le niveau *Compte Grist*, ajouter une règle qui n'autorise l'ajout d'un vote que si la colonne `Votant` contient l'adresse du compte qui écrit.
+2. Page de vote : un [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) branché sur la table `Votes`, avec les questions Consultation, Proposition, Valeur, et Code ou Courriel selon le niveau. L'adresse publique du questionnaire se renseigne dans l'onglet Publication (champ « lien de vote »). Les personnes ne voient que la page au design de l'État, jamais l'interface native de Grist.
 3. Assemblage : le [portail](https://github.com/lab17bis/grist-portail) affiche, sous une seule adresse, une page pour la consultation (la page publique de cet outil) et une page pour le vote (le questionnaire).
 
-**Limites** : le code identifie un droit de vote, pas une personne. Qui transmet son code transmet son vote. Le vote reste non anonyme pour les propriétaires du document, qui peuvent relier un code à son destinataire. Une erreur de saisie sur une proposition ne peut pas être corrigée par la personne : le premier vote reste retenu ; un propriétaire peut supprimer la ligne. Les formulaires publics Grist n'ont pas été testés avec ce contrôle : seule la validation des votes par Grist l'a été (doublons, codes inconnus, plafonds, consultations croisées).
+**Limites** : un code identifie un droit de vote, pas une personne : qui le transmet transmet son vote. Le vote reste non anonyme pour les propriétaires du document, qui peuvent relier un code ou une adresse à son votant. Une erreur de saisie ne peut pas être corrigée par la personne : le premier vote reste retenu ; un propriétaire peut supprimer la ligne. En vote par points, un dépassement du budget invalide aussi les votes suivants du même votant. Les formulaires publics Grist n'ont pas été testés de bout en bout avec ce contrôle : seule la validation des votes par Grist l'a été, dans un vrai document Grist (doublons, codes inconnus, code commun et individuel distincts, adresses invalides, plafonds, consultations croisées).
 
 ## Protéger les votes par des règles d'accès
 

@@ -2,6 +2,20 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (niveaux d'identification)
+
+### Ajouté
+- Cinq niveaux d'identification du vote public, au choix par consultation : ouvert, courriel déclaré, code commun, code individuel, compte Grist. Interface dans *Réglages*, avec pour chaque niveau ce qu'il garantit, pourquoi le choisir et sa limite.
+- Code commun : un seul code pour tout le groupe, créé et changé depuis les réglages, stocké dans la table des codes (jamais lu par la page publique).
+- Courriel déclaré : un vote retenu par adresse (colonne `Votes.Courriel`).
+- Bouton *Mettre à jour le contrôle du vote* pour les documents installés avant les niveaux : la colonne `Bulletin` devient du texte et reçoit la formule d'identité ; les données ne sont pas touchées.
+- Texte d'appel au vote de la page publique adapté au niveau choisi.
+
+### Modifié
+- La colonne `Votes.Bulletin` est désormais une clé de texte (`c:12`, `m:adresse`, `u:adresse`, `o:45`) au lieu d'un numéro ; la colonne `Codes_vote.Utilise` suit.
+- Sans niveau choisi, le comportement reste celui d'avant (code individuel quand le contrôle est installé).
+- Vérifié dans un vrai document Grist : 26 votes d'essai répartis sur les cinq niveaux et un vote par points.
+
 ## 2026-11-26 (deux façons de voter)
 
 ### Ajouté

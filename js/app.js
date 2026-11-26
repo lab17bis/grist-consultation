@@ -37,7 +37,35 @@
   var NOM_COLONNE_CONFIG = 'Config_consultation';
   var ANCIEN_NOM_COLONNE_CONFIG = 'Config_decision';   // documents créés avant le renommage : lu et conservé
   var TABLES = ['Consultations', 'Propositions', 'Criteres', 'Votes', 'Votants'];
-  var TABLE_CODES = 'Codes_vote';   // facultative : vote public contrôlé par code personnel
+  var TABLE_CODES = 'Codes_vote';
+  var CODE_COMMUN = 'Code commun';   // valeur de Codes_vote.Destinataire pour le code partagé par tout le monde
+  // Niveaux d'identification du vote sur la page publique, du plus ouvert au plus strict (colonne Consultations.Identification).
+  var NIVEAUX = [
+    { id: 'Ouvert', titre: 'Ouvert', public: 'Le vote est ouvert à toutes les personnes qui ont le lien.',
+      resume: 'Aucune identification : chaque envoi est un vote.',
+      pourquoi: 'Pour un sondage d\'opinion sans enjeu, où un doublon ne change rien.',
+      limite: 'Rien n\'empêche de voter plusieurs fois, ni un envoi automatique. Les quotas (points, choix unique) ne valent que pour un seul envoi.' },
+    { id: 'Courriel déclaré', titre: 'Courriel déclaré', public: 'Indiquez votre adresse électronique : un seul vote est retenu par adresse.',
+      resume: 'La personne saisit son adresse ; un vote est retenu par adresse.',
+      pourquoi: 'Pour décourager les doublons maladroits sans fabriquer de codes.',
+      limite: 'L\'adresse n\'est pas vérifiée : on peut voter avec l\'adresse d\'une autre personne ou en inventer. À réserver aux enjeux modérés.' },
+    { id: 'Code commun', titre: 'Code commun', public: 'Pour voter, munissez-vous du code communiqué par l\'organisateur.',
+      resume: 'Un seul code, communiqué à tout le groupe (réunion, message interne).',
+      pourquoi: 'Pour réserver le vote à un groupe fermé sans gérer de listes nominatives.',
+      limite: 'Le code est partagé : il filtre qui peut voter, pas combien de fois. Un code qui circule hors du groupe ouvre le vote. Quotas valables par envoi seulement.' },
+    { id: 'Code individuel', titre: 'Code individuel', public: 'Pour voter, munissez-vous de votre code personnel.',
+      resume: 'Un code par personne, à usage unique par proposition.',
+      pourquoi: 'Pour un vote nominatif ou à enjeu : un code, une voix, quotas respectés.',
+      limite: 'Demande de fabriquer et de distribuer les codes, et de protéger leur table avec les règles d\'accès de Grist.' },
+    { id: 'Compte Grist', titre: 'Compte Grist', public: 'Pour voter, connectez-vous à Grist.',
+      resume: 'Seules les personnes connectées à Grist, avec accès au document, votent.',
+      pourquoi: 'Pour le niveau de garantie le plus élevé : l\'identité est celle du compte.',
+      limite: 'Chaque votante ou votant a besoin d\'un compte et d\'un accès au document. Ce n\'est pas une page publique : le vote se fait dans Grist.' }
+  ];
+  function niveauDe(c) {
+    var id = c && c.Identification ? c.Identification : (voteControle() ? 'Code individuel' : 'Ouvert');
+    return NIVEAUX.filter(function (n) { return n.id === id; })[0] || NIVEAUX[0];
+  }   // facultative : vote public contrôlé par code personnel
   var L = {};
   var reglages = {};
 
@@ -158,7 +186,7 @@
       return true;
     });
     data.Votes.forEach(function (v) {
-      if (v.Bulletin) v.Votant = 'code:' + v.Bulletin; else if (v.Code) v.Votant = 'code:' + v.Code;
+      if (v.Bulletin) v.Votant = 'b:' + v.Bulletin; else if (v.Code) v.Votant = 'b:' + v.Code;
       delete v.Code;
     });
     if (PUBLIC) {
@@ -457,7 +485,7 @@
   function appelVote(c) {
     var u = lienVote(c);
     if (!PUBLIC || !u || !voteOuvert(c)) return '';
-    return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Pour voter ou déposer une proposition, répondez au questionnaire.</p>' +
+    return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Pour voter ou déposer une proposition, répondez au questionnaire. ' + esc(niveauDe(c).public) + '</p>' +
       '<a class="fr-btn fr-mt-1w" href="' + esc(adresse(u)) + '" target="_blank" rel="noopener" title="Voter - nouvelle fenêtre">Voter</a></div>';
   }
   function blocLectureSeule() {
@@ -771,12 +799,26 @@
   }
   // --- Vote public contrôlé : codes personnels -------------------------------
 
+  // Identité du votant selon le niveau d'identification de la consultation (colonne Consultations.Identification).
+  // Le résultat est une clé de texte : « c:12 » (code individuel), « m:adresse » (courriel déclaré), « u:adresse » (compte Grist),
+  // « o:45 » (chaque envoi est un votant : ouvert ou code commun). Vide : vote non reconnu, il est ignoré.
   var FORMULE_BULLETIN = [
+    "niv = $Consultation.Identification or 'Code individuel'",
     "code = ($Code or '').strip().upper().replace('-', '').replace(' ', '')",
-    "if not code:",
-    "  return 0",
-    "c = Codes_vote.lookupOne(Code=code, Consultation=$Consultation)",
-    "return c.id if c else 0"].join('\n');
+    "mail = ($Courriel or '').strip().lower()",
+    "if niv == 'Ouvert':",
+    "  return 'o:%d' % $id",
+    "if niv == 'Courriel déclaré':",
+    "  ok = '@' in mail and '.' in mail.split('@')[-1] and ' ' not in mail",
+    "  return ('m:' + mail) if ok else ''",
+    "if niv == 'Code commun':",
+    "  c = Codes_vote.lookupOne(Code=code, Consultation=$Consultation, Destinataire='Code commun') if code else None",
+    "  return ('o:%d' % $id) if c else ''",
+    "if niv == 'Compte Grist':",
+    "  return ('u:' + $Votant.strip().lower()) if $Votant and not $Votant.lower().startswith('anon@') else ''",
+    "c = Codes_vote.lookupOne(Code=code, Consultation=$Consultation) if code else None",
+    "return ('c:%d' % c.id) if c and c.Destinataire != 'Code commun' else ''"].join('\n');
+  var FORMULE_UTILISE = "len(Votes.lookupRecords(Bulletin='c:%d' % $id)) > 0";
   var FORMULE_VALIDE = [
     "if not $Bulletin or not $Proposition:",
     "  return False",
@@ -812,28 +854,52 @@
   }
   function codeAffiche(c) { return String(c || '').replace(/^(.{4})(.+)$/, '$1-$2'); }
   var vc = { consultation: 0, message: null, zone: null };
-  function codesDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid; }); }
+  function codesDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid && x.Destinataire !== CODE_COMMUN; }); }
+  function codeCommunDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid && x.Destinataire === CODE_COMMUN; })[0] || null; }
+  // Le contrôle est-il installé, et à jour (formule d'identité, colonnes Courriel et Identification) ?
+  function controleInstalle() { return !!(colonne('Votes', 'Valide') && meta.tables.some(function (t) { return t.tableId === TABLE_CODES; })); }
+  function controleAJour() {
+    var bu = colonne('Votes', 'Bulletin');
+    return !!(controleInstalle() && colonne('Votes', 'Courriel') && colonne('Consultations', 'Identification') && bu && bu.type === 'Text' && bu.formula === FORMULE_BULLETIN);
+  }
   function blocVoteControle() {
-    var h = '<h2 class="fr-h5 fr-mt-4w">Vote public contrôlé</h2>' +
-      '<p class="fr-text--sm">Pour ouvrir le vote au public sans compte, chaque personne autorisée reçoit un <strong>code personnel</strong> et le saisit dans le formulaire de vote. Un code inconnu est ignoré. Un code ne compte qu\'une fois par proposition : le premier vote est retenu, les suivants sont ignorés. Les points sont plafonnés comme dans l\'outil.</p>';
+    var h = '<h2 class="fr-h5 fr-mt-4w">Identification des votes sur la page publique</h2>' +
+      '<p class="fr-text--sm">Quand le vote passe par une page publique, Grist ne sait pas qui vote. Choisissez, consultation par consultation, comment reconnaître les votantes et les votants. Plus le niveau est strict, plus il demande de préparation. Un vote non reconnu est ignoré.</p>' +
+      '<ul class="fr-text--sm">' + NIVEAUX.map(function (n) { return '<li><strong>' + esc(n.titre) + '</strong> : ' + esc(n.resume) + ' ' + esc(n.pourquoi) + ' <em>Limite : ' + esc(n.limite) + '</em></li>'; }).join('') + '</ul>';
     if (DEMO) return h + '<p class="fr-text--sm">Disponible dans Grist, par un propriétaire du document.</p>';
-    if (!colonne('Votes', 'Valide') || !meta.tables.some(function (t) { return t.tableId === TABLE_CODES; })) {
-      return h + '<p class="fr-text--sm">Ajoute la table <code>' + TABLE_CODES + '</code> et les colonnes <code>Code</code>, <code>Bulletin</code> et <code>Valide</code> à la table Votes. Les données existantes ne sont pas modifiées. À faire par un propriétaire du document.</p>' +
-        '<button type="button" class="fr-btn fr-btn--secondary" data-vc="activer">Activer le vote par code</button>';
+    if (!controleInstalle() || !controleAJour()) {
+      return h + '<p class="fr-text--sm">' + (controleInstalle() ? 'Mise à jour nécessaire : ajoute la colonne <code>Identification</code> à la table Consultations, la colonne <code>Courriel</code> à la table Votes et remplace la formule de la colonne <code>Bulletin</code>.' : 'Ajoute la table <code>' + TABLE_CODES + '</code>, la colonne <code>Identification</code> à la table Consultations et les colonnes <code>Code</code>, <code>Courriel</code>, <code>Bulletin</code> et <code>Valide</code> à la table Votes.') +
+        ' Les données existantes ne sont pas modifiées. À faire par un propriétaire du document.</p>' +
+        '<button type="button" class="fr-btn fr-btn--secondary" data-vc="activer">' + (controleInstalle() ? 'Mettre à jour le contrôle du vote' : 'Activer le contrôle du vote') + '</button>';
     }
     var cs = data.Consultations || [];
     if (!vc.consultation && cs.length) vc.consultation = cs[0].id;
-    var codes = codesDe(vc.consultation), utilises = codes.filter(function (x) { return x.Utilise; }).length;
+    var cons = consultation(vc.consultation), niv = niveauDe(cons);
     h += '<div class="fr-select-group"><label class="fr-label" for="vc-consultation">Consultation</label><select class="fr-select" id="vc-consultation">' +
       cs.map(function (c) { return '<option value="' + c.id + '"' + (c.id === vc.consultation ? ' selected' : '') + '>' + esc(c.Titre || ('Consultation ' + c.id)) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="fr-input-group"><label class="fr-label" for="vc-destinataires">Destinataires<span class="fr-hint-text">Un nom ou une adresse par ligne : un code est créé pour chacun. Laissez vide pour créer un nombre de codes anonymes.</span></label>' +
-      '<textarea class="fr-input" rows="4" id="vc-destinataires"></textarea></div>' +
-      '<div class="fr-input-group"><label class="fr-label" for="vc-nombre">Nombre de codes anonymes</label><input class="fr-input" type="number" min="1" max="500" id="vc-nombre" value="10"></div>' +
-      '<ul class="fr-btns-group fr-btns-group--inline-sm"><li><button type="button" class="fr-btn" data-vc="generer">Créer les codes</button></li>' +
-      '<li><button type="button" class="fr-btn fr-btn--secondary" data-vc="csv"' + (codes.length ? '' : ' disabled') + '>Télécharger la liste (CSV)</button></li></ul>';
+      '<div class="fr-select-group"><label class="fr-label" for="vc-niveau">Niveau d\'identification<span class="fr-hint-text">' + esc(niv.resume) + '</span></label><select class="fr-select" id="vc-niveau">' +
+      NIVEAUX.map(function (n) { return '<option value="' + esc(n.id) + '"' + (n.id === niv.id ? ' selected' : '') + '>' + esc(n.titre) + '</option>'; }).join('') + '</select></div>' +
+      '<p class="fr-text--sm"><strong>Limite de ce niveau :</strong> ' + esc(niv.limite) + '</p>';
+    var champs = { 'Ouvert': 'Consultation, Proposition et Valeur', 'Courriel déclaré': 'Consultation, Proposition, Valeur et Courriel (obligatoire)', 'Code commun': 'Consultation, Proposition, Valeur et Code (obligatoire)', 'Code individuel': 'Consultation, Proposition, Valeur et Code (obligatoire)', 'Compte Grist': 'aucun : le vote se fait dans Grist, avec le compte de la personne' };
+    h += '<p class="fr-text--sm"><strong>Dans le formulaire de vote</strong>, demandez les champs : ' + esc(champs[niv.id]) + '.</p>';
+    if (niv.id === 'Code commun') {
+      var cc = codeCommunDe(vc.consultation);
+      h += '<p class="fr-text--sm">' + (cc ? 'Code commun actuel : <strong class="gd-code">' + esc(codeAffiche(cc.Code)) + '</strong>' : 'Aucun code commun pour cette consultation.') + '</p>' +
+        '<button type="button" class="fr-btn" data-vc="commun">' + (cc ? 'Changer le code commun' : 'Créer le code commun') + '</button>' +
+        (cc ? '<p class="fr-text--sm">Changer le code invalide les votes déposés avec l\'ancien : à faire avant l\'ouverture du vote.</p>' : '');
+    }
+    if (niv.id === 'Code individuel') {
+      var codes = codesDe(vc.consultation), utilises = codes.filter(function (x) { return x.Utilise; }).length;
+      h += '<div class="fr-input-group"><label class="fr-label" for="vc-destinataires">Destinataires<span class="fr-hint-text">Un nom ou une adresse par ligne : un code est créé pour chacun. Laissez vide pour créer un nombre de codes anonymes.</span></label>' +
+        '<textarea class="fr-input" rows="4" id="vc-destinataires"></textarea></div>' +
+        '<div class="fr-input-group"><label class="fr-label" for="vc-nombre">Nombre de codes anonymes</label><input class="fr-input" type="number" min="1" max="500" id="vc-nombre" value="10"></div>' +
+        '<ul class="fr-btns-group fr-btns-group--inline-sm"><li><button type="button" class="fr-btn" data-vc="generer">Créer les codes</button></li>' +
+        '<li><button type="button" class="fr-btn fr-btn--secondary" data-vc="csv"' + (codes.length ? '' : ' disabled') + '>Télécharger la liste (CSV)</button></li></ul>' +
+        '<p class="fr-text--sm">' + codes.length + ' code' + (codes.length > 1 ? 's' : '') + ' pour cette consultation, ' + utilises + ' utilisé' + (utilises > 1 ? 's' : '') + '.</p>';
+    }
     if (vc.message) h += '<p class="fr-text--sm" role="status">' + esc(vc.message) + '</p>';
-    h += '<p class="fr-text--sm">' + codes.length + ' code' + (codes.length > 1 ? 's' : '') + ' pour cette consultation, ' + utilises + ' utilisé' + (utilises > 1 ? 's' : '') + '.</p>' +
-      '<p class="fr-text--sm"><strong>Protégez les codes avec les règles d\'accès de Grist</strong> : refusez la lecture de la table <code>' + TABLE_CODES + '</code> et de la colonne <code>Votes.Code</code> aux personnes qui ne sont pas propriétaires. Sinon un visiteur pourrait relire les codes et voter à la place d\'un autre. Dans le formulaire de vote, demandez les champs Consultation, Proposition, Valeur et Code.</p>';
+    h += '<p class="fr-text--sm"><strong>Protégez les données avec les règles d\'accès de Grist</strong> : refusez la lecture de la table <code>' + TABLE_CODES + '</code> et des colonnes <code>Votes.Code</code>, <code>Votes.Courriel</code> et <code>Votes.Bulletin</code> aux personnes qui ne sont pas propriétaires. Sinon un visiteur pourrait relire les codes ou les adresses. ' +
+      (niv.id === 'Compte Grist' ? 'Pour ce niveau, ajoutez aussi une règle qui n\'autorise l\'ajout d\'un vote que si la colonne <code>Votant</code> contient l\'adresse du compte qui écrit.' : 'Les points restent plafonnés comme dans l\'outil.') + '</p>';
     return h;
   }
   function redessinerReglages() { if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } }
@@ -844,6 +910,7 @@
     zone.addEventListener('change', function (e) {
       var t = e.target;
       if (t.id === 'vc-consultation') { vc.consultation = num(t.value); vc.message = null; redessinerReglages(); return; }
+      if (t.id === 'vc-niveau') { changerNiveau(t.value); return; }
       if (t.hasAttribute('data-nc')) {
         nouveauChamp[t.getAttribute('data-nc')] = t.type === 'checkbox' ? t.checked : t.value;
         if (t.getAttribute('data-nc') === 'type') redessinerReglages();
@@ -865,6 +932,7 @@
       var a = b.getAttribute('data-vc');
       if (a === 'activer') activerVoteControle(b);
       else if (a === 'generer') genererCodes();
+      else if (a === 'commun') genererCodeCommun();
       else if (a === 'csv') telechargerCodes();
     });
   }
@@ -874,21 +942,41 @@
   }
   function activerVoteControle(b) {
     b.disabled = true;
-    // Ordre imposé : la colonne Code, puis la table des codes, puis les deux colonnes calculées qui la lisent.
+    // Ordre imposé : les colonnes de saisie, la table des codes, puis les colonnes calculées qui les lisent.
     var acts = [];
     if (!colonne('Votes', 'Code')) acts.push(['AddColumn', 'Votes', 'Code', { type: 'Text' }]);
+    if (!colonne('Votes', 'Courriel')) acts.push(['AddColumn', 'Votes', 'Courriel', { type: 'Text' }]);
+    if (!colonne('Consultations', 'Identification')) acts.push(['AddColumn', 'Consultations', 'Identification', choix(NIVEAUX.map(function (n) { return n.id; }))]);
     if (!meta.tables.some(function (t) { return t.tableId === TABLE_CODES; })) {
       acts.push(['AddTable', TABLE_CODES, [{ id: 'Consultation', type: 'Ref:Consultations' }, { id: 'Destinataire', type: 'Text' }, { id: 'Code', type: 'Text' }]]);
     }
-    if (!colonne('Votes', 'Bulletin')) acts.push(['AddColumn', 'Votes', 'Bulletin', { type: 'Int', isFormula: true, formula: FORMULE_BULLETIN }]);
+    var bu = colonne('Votes', 'Bulletin');
+    if (!bu) acts.push(['AddColumn', 'Votes', 'Bulletin', { type: 'Text', isFormula: true, formula: FORMULE_BULLETIN }]);
+    else if (bu.type !== 'Text' || bu.formula !== FORMULE_BULLETIN) acts.push(['ModifyColumn', 'Votes', 'Bulletin', { type: 'Text', isFormula: true, formula: FORMULE_BULLETIN }]);
     if (!colonne('Votes', 'Valide')) acts.push(['AddColumn', 'Votes', 'Valide', { type: 'Bool', isFormula: true, formula: FORMULE_VALIDE }]);
-    if (!colonne(TABLE_CODES, 'Utilise')) acts.push(['AddColumn', TABLE_CODES, 'Utilise', { type: 'Bool', isFormula: true, formula: 'len(Votes.lookupRecords(Bulletin=$id)) > 0' }]);
+    var ut = colonne(TABLE_CODES, 'Utilise');
+    if (!ut) acts.push(['AddColumn', TABLE_CODES, 'Utilise', { type: 'Bool', isFormula: true, formula: FORMULE_UTILISE }]);
+    else if (ut.formula !== FORMULE_UTILISE) acts.push(['ModifyColumn', TABLE_CODES, 'Utilise', { formula: FORMULE_UTILISE }]);
     grist.docApi.applyUserActions(acts).then(function () {
       return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
       });
-    }).then(function () { return rafraichirVC('Vote par code activé.'); })
+    }).then(function () { return rafraichirVC('Contrôle du vote activé.'); })
       .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; redessinerReglages(); });
+  }
+  function changerNiveau(valeur) {
+    var cid = vc.consultation; if (!cid) return;
+    grist.docApi.applyUserActions([['UpdateRecord', 'Consultations', cid, { Identification: valeur }]])
+      .then(function () { return rafraichirVC('Niveau enregistré : ' + valeur + '.'); })
+      .catch(function (err) { vc.message = 'Enregistrement refusé par Grist. (' + ((err && err.message) || err) + ')'; redessinerReglages(); });
+  }
+  function genererCodeCommun() {
+    var cid = vc.consultation; if (!cid) return;
+    var deja = {}; (data.Codes_vote || []).forEach(function (x) { deja[x.Code] = 1; });
+    var cc = codeCommunDe(cid), code = nouveauCode(deja);
+    var act = cc ? ['UpdateRecord', TABLE_CODES, cc.id, { Code: code }] : ['AddRecord', TABLE_CODES, null, { Consultation: cid, Destinataire: CODE_COMMUN, Code: code }];
+    grist.docApi.applyUserActions([act]).then(function () { return rafraichirVC('Code commun créé : ' + codeAffiche(code) + '.'); })
+      .catch(function (err) { vc.message = 'Création refusée par Grist. (' + ((err && err.message) || err) + ')'; redessinerReglages(); });
   }
   function genererCodes() {
     var cid = vc.consultation; if (!cid) return;
