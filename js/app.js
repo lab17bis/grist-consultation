@@ -422,7 +422,7 @@
     else if (r.vue === 'proposition') html = vueProposition(r.id, r.pid);
     else if (r.vue === 'nouvelle') html = vueGerer(null);
     else html = vueAccueil();
-    app.innerHTML = html;
+    app.innerHTML = blocColonnesManquantes() + html;
     chargerImages();
   }
 
@@ -1170,10 +1170,45 @@
     // Page publique : la table des votants n'est jamais lue, elle peut être masquée par les règles d'accès.
     return TABLES.filter(function (t) { return ids.indexOf(t) < 0 && !(PUBLIC && t === 'Votants'); });
   }
+  // Tables du même nom déjà présentes (créées à la main ou par un autre outil) :
+  // le widget les garde et leur ajoute seulement les colonnes qui leur manquent.
+  function colonnesManquantes() {
+    if (DEMO || PUBLIC || !meta.tables.length) return [];
+    var sch = schema(), absentes = tablesManquantes(), r = [];
+    TABLES.forEach(function (t) {
+      if (absentes.indexOf(t) >= 0) return;
+      sch[t].forEach(function (c) { if (!colonne(t, c[0])) r.push({ table: t, id: c[0], def: c[1] }); });
+    });
+    return r;
+  }
+  var CONSEIL_RENOMMER = 'Si l\'une de vos colonnes contient déjà cette information sous un autre nom (par exemple <code>Nom</code> au lieu de <code>Titre</code>), renommez-la d\'abord dans Grist avec le nom attendu : ses données seront reprises.';
+  function blocColonnesManquantes() {
+    var m = colonnesManquantes();
+    if (!m.length) return '';
+    return '<div class="fr-alert fr-alert--warning fr-mb-3w"><h2 class="fr-alert__title">Des colonnes attendues manquent dans vos tables</h2>' +
+      '<p>' + m.map(function (c) { return '<code>' + esc(c.table + '.' + c.id) + '</code>'; }).join(', ') + '. Sans elles, le widget ne peut ni afficher ni enregistrer ces informations.</p>' +
+      '<p class="fr-text--sm">' + CONSEIL_RENOMMER + ' Sinon, ajoutez-les : rien n\'est renommé ni supprimé. À faire par un propriétaire du document.</p>' +
+      '<button type="button" class="fr-btn fr-btn--sm" data-action="completer-colonnes">Ajouter les colonnes manquantes</button></div>';
+  }
+  function actionsColonnesManquantes() {
+    return colonnesManquantes().map(function (c) { return ['AddColumn', c.table, c.id, Object.assign({}, c.def)]; });
+  }
+  function completerColonnes() {
+    var a = actionsColonnesManquantes();
+    if (!a.length) return;
+    grist.docApi.applyUserActions(a).then(function () {
+      etat.alerte = { type: 'success', texte: a.length + ' colonne(s) ajoutée(s).' };
+      return charger();
+    }).then(rendre).catch(function (err) {
+      etat.alerte = { type: 'error', texte: 'Ajout impossible : seuls les propriétaires du document peuvent ajouter des colonnes. (' + ((err && err.message) || err) + ')' };
+      rendre();
+    });
+  }
   function vueInstallation() {
-    var manquantes = tablesManquantes();
+    var manquantes = tablesManquantes(), presentes = TABLES.filter(function (t) { return manquantes.indexOf(t) < 0; });
     return '<h1 class="fr-h3">Installer l\'outil de consultation dans ce document</h1>' + blocAlerte() +
-      '<p>Le widget a besoin des tables ' + manquantes.map(function (t) { return '<code>' + t + '</code>'; }).join(', ') + '. Il peut les créer pour vous. Les tables existantes ne sont pas modifiées.</p>' +
+      '<p>Le widget a besoin des tables ' + manquantes.map(function (t) { return '<code>' + t + '</code>'; }).join(', ') + '. Il peut les créer pour vous.' +
+      (presentes.length ? ' Les tables déjà présentes (' + presentes.map(function (t) { return '<code>' + t + '</code>'; }).join(', ') + ') sont gardées : le widget leur ajoute seulement les colonnes qui leur manquent, rien n\'est renommé ni supprimé.</p><p class="fr-text--sm">' + CONSEIL_RENOMMER + '</p>' : ' Les tables existantes ne sont pas modifiées.</p>') +
       '<p class="fr-text--sm">À faire par un propriétaire du document. Le widget doit avoir l\'accès complet au document.</p>' +
       '<ul class="fr-btns-group fr-btns-group--inline-md"><li><button type="button" class="fr-btn" data-installer="vide">Créer les tables</button></li>' +
       '<li><button type="button" class="fr-btn fr-btn--secondary" data-installer="exemple">Créer les tables avec un exemple fictif</button></li></ul>';
@@ -1181,6 +1216,7 @@
   function installer(avecExemple) {
     var sch = schema(), actions = [];
     tablesManquantes().forEach(function (t) { actions.push(['AddTable', t, sch[t].map(function (c) { return Object.assign({ id: c[0] }, c[1]); })]); });
+    actions = actions.concat(actionsColonnesManquantes());
     return grist.docApi.applyUserActions(actions).then(function () {
       return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
@@ -1259,6 +1295,7 @@
     if (a === 'enregistrer-reglages') { enregistrerReglages(); return; }
     if (a === 'annuler-reglages') { brouillonReglages = null; location.hash = '#/'; return; }
     if (a === 'annuler-suppression') { etat.suppression = null; rendre(); return; }
+    if (a === 'completer-colonnes') { el.disabled = true; completerColonnes(); return; }
     if (el.hasAttribute('data-installer')) { el.disabled = true; installer(el.getAttribute('data-installer') === 'exemple'); return; }
     if (el.hasAttribute('data-soutenir') && c) { voter(c, num(el.getAttribute('data-soutenir')), 'soutien'); return; }
     if (el.hasAttribute('data-choisir') && c) { voter(c, num(el.getAttribute('data-choisir')), 'choix'); return; }
