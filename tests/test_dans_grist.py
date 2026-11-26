@@ -54,6 +54,29 @@ with sync_playwright() as p:
     verifier('ordinateur partagé : le vote d\'agent@ n\'est pas retiré par collegue@', any(x['Votant'] == 'agent@exemple.fr' for x in v))
     verifier('ordinateur partagé : message « la personne connectée a changé »', 'personne connectée a changé' in f.locator('body').inner_text())
     pg.close()
+    # --- Vote public contrôlé : seuls comptent les votes par code validés par Grist ; les anonymes sans code sont ignorés
+    m4 = {'tables': {'Table1': {'colonnes': {'A': {'type': 'Text'}}, 'lignes': []}}, 'table': 'Table1', 'utilisateur': {'email': 'agent@exemple.fr', 'nom': 'Agent Test'}}
+    pg, f = ouvrir(b, 8781, m4, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click()
+    f.locator('.gd-cartes').first.wait_for()
+    doc = mock(pg)['tables']; pg.close()
+    cid = doc['Consultations']['lignes'][0]['id']
+    pids = [x['id'] for x in doc['Propositions']['lignes'] if x['Consultation'] == cid][:2]
+    doc['Votes']['colonnes']['Code'] = {'type': 'Text'}
+    doc['Votes']['colonnes']['Bulletin'] = {'type': 'Int', 'isFormula': True, 'formula': 'x'}
+    doc['Votes']['colonnes']['Valide'] = {'type': 'Bool', 'isFormula': True, 'formula': 'x'}
+    doc['Votes']['lignes'] = [
+        {'id': 1, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Votant': 'anon@getgrist.com', 'Code': 'AAAABBBB', 'Bulletin': 1, 'Valide': True},
+        {'id': 2, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Votant': 'anon@getgrist.com', 'Code': 'AAAABBBB', 'Bulletin': 1, 'Valide': False},
+        {'id': 3, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Votant': 'anon@getgrist.com', 'Code': 'ZZZZZZZZ', 'Bulletin': 0, 'Valide': False},
+        {'id': 4, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Votant': 'anon@getgrist.com', 'Code': '', 'Bulletin': 0, 'Valide': False},
+        {'id': 5, 'Consultation': cid, 'Proposition': pids[1], 'Valeur': 1, 'Votant': 'collegue@exemple.fr'}]
+    doc['Consultations']['lignes'][0]['Resultats'] = 'Toujours'
+    pg, f = ouvrir(b, 8781, dict(m4, tables=doc), erreurs)
+    f.locator('.gd-cartes').first.wait_for(); pg.wait_for_timeout(300)
+    texte = f.locator('body').inner_text()
+    verifier('vote par code : 2 participants (1 code valide + 1 personne connectée) ; doublon, code inconnu et anonyme sans code ignorés', '2 participants' in texte)
+    pg.close()
     verifier('aucune erreur JavaScript', not erreurs)
     if erreurs: print(erreurs)
     b.close()

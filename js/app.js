@@ -37,6 +37,7 @@
   var NOM_COLONNE_CONFIG = 'Config_consultation';
   var ANCIEN_NOM_COLONNE_CONFIG = 'Config_decision';   // documents créés avant le renommage : lu et conservé
   var TABLES = ['Consultations', 'Propositions', 'Criteres', 'Votes', 'Votants'];
+  var TABLE_CODES = 'Codes_vote';   // facultative : vote public contrôlé par code personnel
   var L = {};
   var reglages = {};
 
@@ -133,17 +134,38 @@
         try { r = c && c.description ? JSON.parse(c.description) : {}; } catch (e) { r = {}; }
         appliquerReglages(r);
       }).catch(function () { appliquerReglages({}); });
-    return Promise.all([config].concat(TABLES.map(function (t) {
-      // Page publique : la table des votants (adresses de courriel) n'est jamais lue, et les votants des votes sont remplacés par un numéro.
+    var lectures = TABLES.map(function (t) {
+      // Page publique : la table des votants (adresses de courriel) n'est jamais lue.
       if (PUBLIC && t === 'Votants') { data[t] = []; return Promise.resolve(); }
-      return grist.docApi.fetchTable(t).then(function (c) {
-        data[t] = lignesDepuisColonnes(c);
-        if (PUBLIC && t === 'Votes') {
-          var noms = {}, n = 0;
-          data[t].forEach(function (v) { if (v.Votant) { if (!noms[v.Votant]) noms[v.Votant] = 'v' + (++n); v.Votant = noms[v.Votant]; } });
-        }
-      }).catch(function () { data[t] = []; });
-    })));
+      return grist.docApi.fetchTable(t).then(function (c) { data[t] = lignesDepuisColonnes(c); }).catch(function () { data[t] = []; });
+    });
+    // Codes de vote : jamais lus par la page publique (ils sont secrets), facultatifs ailleurs.
+    lectures.push(PUBLIC ? Promise.resolve().then(function () { data.Codes_vote = []; }) :
+      grist.docApi.fetchTable(TABLE_CODES).then(function (c) { data.Codes_vote = lignesDepuisColonnes(c); }).catch(function () { data.Codes_vote = []; }));
+    return Promise.all([config].concat(lectures)).then(function () { normaliserVotes(); });
+  }
+
+  // Vote par code. Quand le vote contrôlé est activé (colonnes Valide et Bulletin dans Votes), un vote déposé avec un code
+  // ne compte que si Grist l'a validé (code connu, premier vote de ce code pour la proposition, plafond respecté).
+  // Un vote anonyme sans code est ignoré. Le bulletin (numéro de la ligne du code) tient lieu de votant : le code lui-même
+  // n'est jamais utilisé par le widget.
+  function voteControle() { return !!(colonne('Votes', 'Valide') || (data.Votes || []).some(function (v) { return v.Valide !== undefined; })); }
+  function normaliserVotes() {
+    var controle = voteControle();
+    data.Votes = data.Votes.filter(function (v) {
+      if (v.Code || v.Bulletin) return !!v.Valide;
+      if (controle && (!v.Votant || /^anon@/i.test(v.Votant))) return false;
+      return true;
+    });
+    data.Votes.forEach(function (v) {
+      if (v.Bulletin) v.Votant = 'code:' + v.Bulletin; else if (v.Code) v.Votant = 'code:' + v.Code;
+      delete v.Code;
+    });
+    if (PUBLIC) {
+      // Page publique : les votants sont remplacés par un numéro.
+      var noms = {}, n = 0;
+      data.Votes.forEach(function (v) { if (v.Votant) { if (!noms[v.Votant]) noms[v.Votant] = 'v' + (++n); v.Votant = noms[v.Votant]; } });
+    }
   }
 
   function charger() { return (DEMO ? chargerDemo() : chargerGrist()).then(indexer); }
@@ -743,8 +765,128 @@
       h += '<div class="fr-input-group"><label class="fr-label" for="rg-' + l[0] + '">' + esc(l[1]) + '<span class="fr-hint-text">Colonne ' + l[2] + '.' + l[3] + '. ' + esc(l[4]) + '</span></label>' +
         '<textarea class="fr-input" rows="5" id="rg-' + l[0] + '">' + esc((b.listes[l[0]] && b.listes[l[0]].length ? b.listes[l[0]] : DEFAUTS[l[0]]).join('\n')) + '</textarea></div>';
     });
-    return h + '</div>';
+    return h + blocVoteControle() + '</div>';
   }
+  // --- Vote public contrôlé : codes personnels -------------------------------
+
+  var FORMULE_BULLETIN = [
+    "code = ($Code or '').strip().upper().replace('-', '').replace(' ', '')",
+    "if not code:",
+    "  return 0",
+    "c = Codes_vote.lookupOne(Code=code, Consultation=$Consultation)",
+    "return c.id if c else 0"].join('\n');
+  var FORMULE_VALIDE = [
+    "if not $Bulletin or not $Proposition:",
+    "  return False",
+    "tous = sorted(Votes.lookupRecords(Bulletin=$Bulletin, Consultation=$Consultation), key=lambda r: r.id)",
+    "premiers = {}",
+    "for r in tous:",
+    "  cle = (r.Proposition.id, r.Critere.id)",
+    "  if cle not in premiers:",
+    "    premiers[cle] = r",
+    "if premiers[($Proposition.id, $Critere.id)].id != $id:",
+    "  return False",
+    "mode = $Consultation.Mode",
+    "if mode == 'Choix unique':",
+    "  return tous[0].id == $id and $Valeur == 1",
+    "if mode == 'Vote par points':",
+    "  budget = $Consultation.Points if $Consultation.Points > 0 else 5",
+    "  maxp = $Consultation.Max_par_proposition if $Consultation.Max_par_proposition > 0 else budget",
+    "  if $Valeur < 0 or $Valeur > maxp:",
+    "    return False",
+    "  return sum(r.Valeur for r in premiers.values() if r.id <= $id) <= budget",
+    "if mode == 'Notation':",
+    "  return 0 <= $Valeur <= 5",
+    "return $Valeur == 1"].join('\n');
+  var ALPHABET_CODES = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  function nouveauCode(deja) {
+    var limite = 256 - (256 % ALPHABET_CODES.length);
+    for (;;) {
+      var a = new Uint8Array(24), c = '';
+      (window.crypto || window.msCrypto).getRandomValues(a);
+      for (var i = 0; i < a.length && c.length < 8; i++) if (a[i] < limite) c += ALPHABET_CODES.charAt(a[i] % ALPHABET_CODES.length);
+      if (c.length === 8 && !deja[c]) { deja[c] = 1; return c; }
+    }
+  }
+  function codeAffiche(c) { return String(c || '').replace(/^(.{4})(.+)$/, '$1-$2'); }
+  var vc = { consultation: 0, message: null, zone: null };
+  function codesDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid; }); }
+  function blocVoteControle() {
+    var h = '<h2 class="fr-h5 fr-mt-4w">Vote public contrôlé</h2>' +
+      '<p class="fr-text--sm">Pour ouvrir le vote au public sans compte, chaque personne autorisée reçoit un <strong>code personnel</strong> et le saisit dans le formulaire de vote. Un code inconnu est ignoré. Un code ne compte qu\'une fois par proposition : le premier vote est retenu, les suivants sont ignorés. Les points sont plafonnés comme dans l\'outil.</p>';
+    if (DEMO) return h + '<p class="fr-text--sm">Disponible dans Grist, par un propriétaire du document.</p>';
+    if (!colonne('Votes', 'Valide') || !meta.tables.some(function (t) { return t.tableId === TABLE_CODES; })) {
+      return h + '<p class="fr-text--sm">Ajoute la table <code>' + TABLE_CODES + '</code> et les colonnes <code>Code</code>, <code>Bulletin</code> et <code>Valide</code> à la table Votes. Les données existantes ne sont pas modifiées. À faire par un propriétaire du document.</p>' +
+        '<button type="button" class="fr-btn fr-btn--secondary" data-vc="activer">Activer le vote par code</button>';
+    }
+    var cs = data.Consultations || [];
+    if (!vc.consultation && cs.length) vc.consultation = cs[0].id;
+    var codes = codesDe(vc.consultation), utilises = codes.filter(function (x) { return x.Utilise; }).length;
+    h += '<div class="fr-select-group"><label class="fr-label" for="vc-consultation">Consultation</label><select class="fr-select" id="vc-consultation">' +
+      cs.map(function (c) { return '<option value="' + c.id + '"' + (c.id === vc.consultation ? ' selected' : '') + '>' + esc(c.Titre || ('Consultation ' + c.id)) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="fr-input-group"><label class="fr-label" for="vc-destinataires">Destinataires<span class="fr-hint-text">Un nom ou une adresse par ligne : un code est créé pour chacun. Laissez vide pour créer un nombre de codes anonymes.</span></label>' +
+      '<textarea class="fr-input" rows="4" id="vc-destinataires"></textarea></div>' +
+      '<div class="fr-input-group"><label class="fr-label" for="vc-nombre">Nombre de codes anonymes</label><input class="fr-input" type="number" min="1" max="500" id="vc-nombre" value="10"></div>' +
+      '<ul class="fr-btns-group fr-btns-group--inline-sm"><li><button type="button" class="fr-btn" data-vc="generer">Créer les codes</button></li>' +
+      '<li><button type="button" class="fr-btn fr-btn--secondary" data-vc="csv"' + (codes.length ? '' : ' disabled') + '>Télécharger la liste (CSV)</button></li></ul>';
+    if (vc.message) h += '<p class="fr-text--sm" role="status">' + esc(vc.message) + '</p>';
+    h += '<p class="fr-text--sm">' + codes.length + ' code' + (codes.length > 1 ? 's' : '') + ' pour cette consultation, ' + utilises + ' utilisé' + (utilises > 1 ? 's' : '') + '.</p>' +
+      '<p class="fr-text--sm"><strong>Protégez les codes avec les règles d\'accès de Grist</strong> : refusez la lecture de la table <code>' + TABLE_CODES + '</code> et de la colonne <code>Votes.Code</code> aux personnes qui ne sont pas propriétaires. Sinon un visiteur pourrait relire les codes et voter à la place d\'un autre. Dans le formulaire de vote, demandez les champs Consultation, Proposition, Valeur et Code.</p>';
+    return h;
+  }
+  function brancherVoteControle(zone) {
+    vc.zone = zone;
+    var sel = zone.querySelector('#vc-consultation');
+    if (sel) sel.addEventListener('change', function () { vc.consultation = num(sel.value); vc.message = null; zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); });
+    zone.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-vc]'); if (!b || b.disabled) return;
+      var a = b.getAttribute('data-vc');
+      if (a === 'activer') activerVoteControle(b);
+      else if (a === 'generer') genererCodes();
+      else if (a === 'csv') telechargerCodes();
+    });
+  }
+  function rafraichirVC(msg) {
+    vc.message = msg || null;
+    return charger().then(function () { if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } });
+  }
+  function activerVoteControle(b) {
+    b.disabled = true;
+    // Ordre imposé : la colonne Code, puis la table des codes, puis les deux colonnes calculées qui la lisent.
+    var acts = [];
+    if (!colonne('Votes', 'Code')) acts.push(['AddColumn', 'Votes', 'Code', { type: 'Text' }]);
+    if (!meta.tables.some(function (t) { return t.tableId === TABLE_CODES; })) {
+      acts.push(['AddTable', TABLE_CODES, [{ id: 'Consultation', type: 'Ref:Consultations' }, { id: 'Destinataire', type: 'Text' }, { id: 'Code', type: 'Text' }]]);
+    }
+    if (!colonne('Votes', 'Bulletin')) acts.push(['AddColumn', 'Votes', 'Bulletin', { type: 'Int', isFormula: true, formula: FORMULE_BULLETIN }]);
+    if (!colonne('Votes', 'Valide')) acts.push(['AddColumn', 'Votes', 'Valide', { type: 'Bool', isFormula: true, formula: FORMULE_VALIDE }]);
+    if (!colonne(TABLE_CODES, 'Utilise')) acts.push(['AddColumn', TABLE_CODES, 'Utilise', { type: 'Bool', isFormula: true, formula: 'len(Votes.lookupRecords(Bulletin=$id)) > 0' }]);
+    grist.docApi.applyUserActions(acts).then(function () {
+      return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
+        meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
+      });
+    }).then(function () { return rafraichirVC('Vote par code activé.'); })
+      .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } });
+  }
+  function genererCodes() {
+    var cid = vc.consultation; if (!cid) return;
+    var zone = vc.zone, dest = (zone.querySelector('#vc-destinataires').value || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+    var n = dest.length || Math.max(1, Math.min(500, num(zone.querySelector('#vc-nombre').value) || 10));
+    var deja = {}; (data.Codes_vote || []).forEach(function (x) { deja[x.Code] = 1; });
+    var acts = [];
+    for (var i = 0; i < n; i++) acts.push(['AddRecord', TABLE_CODES, null, { Consultation: cid, Destinataire: dest[i] || '', Code: nouveauCode(deja) }]);
+    grist.docApi.applyUserActions(acts).then(function () { return rafraichirVC(n + ' code' + (n > 1 ? 's' : '') + ' créé' + (n > 1 ? 's' : '') + '.'); })
+      .catch(function (err) { vc.message = 'Création refusée par Grist. (' + ((err && err.message) || err) + ')'; zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); });
+  }
+  function telechargerCodes() {
+    var lien = lienVote(consultation(vc.consultation)) || '';
+    var lignes = [['Destinataire', 'Code', 'Utilisé', 'Lien du formulaire']].concat(codesDe(vc.consultation).map(function (x) { return [x.Destinataire || '', codeAffiche(x.Code), x.Utilise ? 'oui' : 'non', lien]; }));
+    var csv = '﻿' + lignes.map(function (l) { return l.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'codes-de-vote.csv';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
   var configLab = null, avantApercu = null;
   function monterCoque() {
     var z = document.getElementById('gd-coque');
@@ -756,7 +898,7 @@
       vue: { libelle: 'Consultations', element: app },
       ongletInitial: route().vue === 'reglages' ? 'reglages' : 'vue',
       page: brouillonReglages.page,
-      onglets: [{ id: 'reglages', libelle: 'Réglages', rendre: function (zone) { zone.innerHTML = reglagesPropres(); } }],
+      onglets: [{ id: 'reglages', libelle: 'Réglages', rendre: function (zone) { zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); } }],
       // Aperçu réel : l'outil lui-même s'affiche sous l'en-tête, avec les listes en cours de saisie (même non enregistrées).
       surApercu: function (ouvert) {
         if (ouvert && configLab && configLab.estModifie() && brouillonReglages) {

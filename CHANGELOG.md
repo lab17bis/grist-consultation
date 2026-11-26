@@ -2,6 +2,16 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (vote public contrôlé)
+
+### Ajouté
+- Vote public contrôlé par code personnel : table `Codes_vote`, colonnes `Code`, `Bulletin` et `Valide` dans `Votes`, activés par un propriétaire (Configurer › Réglages › Vote public contrôlé). Un code inconnu ou absent est ignoré ; un code ne compte qu'une fois par proposition (premier vote retenu) ; plafonds de points vérifiés par Grist ; un code ne vaut que pour sa consultation.
+- Création de codes par consultation (liste de destinataires ou nombre de codes anonymes) et export CSV pour envoyer chaque code.
+- Les votes anonymes sans code sont ignorés quand le vote contrôlé est activé.
+
+### Inchangé
+- Les documents qui n'activent pas le vote par code se comportent exactement comme avant.
+
 ## 2026-11-25 (mention de conception)
 
 ### Ajouté
