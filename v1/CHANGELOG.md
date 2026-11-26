@@ -2,6 +2,11 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-26 (vérifications)
+
+### Vérifié
+- Dépôt anonyme par formulaire public Grist : un envoi sans connexion, depuis une page d'un autre domaine, est enregistré, y compris dans les colonnes ajoutées au formulaire après sa publication. Documentation mise à jour, aucun changement de code.
+
 ## 2026-11-26 (niveaux d'identification)
 
 ### Ajouté
