@@ -36,7 +36,9 @@ Pour recueillir des propositions de personnes qui n'ont pas accès au document, 
 
 ## Le régler
 
-Le widget s'ouvre sur une barre d'onglets : *Consultations* (l'outil), puis *Réglages*, *En-tête et pied*, *Aperçu* (le rendu avec les réglages en cours) et *Publication* (qui peut utiliser l'outil, adresse du widget). Elle regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
+La barre de l'éditeur est commune à tous les widgets : nom du widget et statut d'enregistrement à gauche, onglets *Réglages*, *En-tête et pied*, *Aperçu* et *Publication* au centre, bouton *Enregistrer* à droite. L'outil s'utilise dans l'onglet *Aperçu*, ouvert par défaut, avec son en-tête et son pied de page. *Réglages* regroupe l'en-tête et le pied de page, les types de propositions et les suites possibles. Les réglages sont enregistrés en JSON dans la **description de la colonne `Config_decision`** de la table `Consultations`. Ne supprimez pas cette colonne.
+
+**Éditeur du widget ou page d'usage, avec le même lien.** Chaque vue Grist choisit ce qu'elle affiche (onglet *Publication*, rubrique *Affichage de cette vue Grist*) : l'**éditeur du widget** (affichage par défaut) ou la **page d'usage** (l'outil avec son en-tête et son pied de page, sans barre de réglages ; un lien *Éditer le widget*, en bas de page, rouvre l'éditeur). Pour avoir les deux dans un document, ajoutez deux vues Personnalisées avec la même adresse. Ce choix n'est pas une protection : les droits restent ceux du document (Partager, Permissions avancées).
 
 Dans *Réglages*, la section *Champs supplémentaires des propositions* permet d'ajouter ses propres champs au dépôt (texte court ou long, choix dans une liste, date, nombre ; obligatoires ou non). Chaque champ devient une colonne de la table `Propositions`, créée à l'enregistrement des réglages ; il apparaît dans le formulaire de dépôt et sur la fiche de la proposition. Retirer un champ des réglages ne supprime ni la colonne ni ses données, et un champ dont la colonne a été supprimée dans Grist n'est plus proposé.
 
@@ -97,7 +99,7 @@ La page publique du widget ne permet pas de voter : elle est en lecture seule. P
 
 ## Identifier les votes sur la page publique
 
-Sur une page publique, Grist ne sait pas qui vote. Le niveau d'identification se choisit **consultation par consultation** (*Configurer › Réglages › Identification des votes sur la page publique*, colonne `Consultations.Identification`). Un vote non reconnu est ignoré. Les cinq niveaux, du plus ouvert au plus strict :
+Sur une page publique, Grist ne sait pas qui vote. Le niveau d'identification se choisit **consultation par consultation** (*Réglages › Identification des votes sur la page publique*, colonne `Consultations.Identification`). Un vote non reconnu est ignoré. Les cinq niveaux, du plus ouvert au plus strict :
 
 | Niveau | Ce que la personne fait | Pour quel usage | Limite |
 | --- | --- | --- | --- |

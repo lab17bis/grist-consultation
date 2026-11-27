@@ -105,8 +105,7 @@ with sync_playwright() as p:
     # --- Réglages : ajout d'un champ de proposition, colonne créée à l'enregistrement
     pg, f = ouvrir(b, 8781, m5, erreurs)
     f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
-    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
-    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.locator('.cl-barre .cl-onglets label', has_text='Réglages').click()
     f.locator('#nc-label').wait_for()
     f.locator('#nc-label').fill('Public concerné'); f.locator('#nc-type').select_option('choix')
     f.locator('#nc-choix').fill('Élèves\nFamilles')
@@ -120,8 +119,7 @@ with sync_playwright() as p:
     # --- Niveaux d'identification du vote public : activation, changement de niveau, code commun
     pg, f = ouvrir(b, 8781, m5, erreurs)
     f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
-    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
-    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.locator('.cl-barre .cl-onglets label', has_text='Réglages').click()
     f.get_by_role('button', name='Activer le contrôle du vote').click()
     f.locator('#vc-niveau').wait_for()
     d = mock(pg)['tables']
@@ -153,8 +151,7 @@ with sync_playwright() as p:
     doc['Codes_vote'] = {'colonnes': {'Consultation': {'type': 'Ref:Consultations'}, 'Destinataire': {'type': 'Text'}, 'Code': {'type': 'Text'}}, 'lignes': []}
     pg, f = ouvrir(b, 8781, dict(m5, tables=doc), erreurs)
     f.locator('.gd-cartes').first.wait_for()
-    if f.get_by_text('Configurer').count(): f.get_by_text('Configurer').first.click()
-    f.get_by_role('tab', name='Réglages').click() if f.get_by_role('tab', name='Réglages').count() else f.get_by_text('Réglages', exact=True).first.click()
+    f.locator('.cl-barre .cl-onglets label', has_text='Réglages').click()
     f.get_by_role('button', name='Mettre à jour le contrôle du vote').click()
     f.locator('#vc-niveau').wait_for()
     d = mock(pg)['tables']
