@@ -898,8 +898,8 @@
         '<p class="fr-text--sm">' + codes.length + ' code' + (codes.length > 1 ? 's' : '') + ' pour cette consultation, ' + utilises + ' utilisé' + (utilises > 1 ? 's' : '') + '.</p>';
     }
     if (vc.message) h += '<p class="fr-text--sm" role="status">' + esc(vc.message) + '</p>';
-    h += '<p class="fr-text--sm"><strong>Protégez les données avec les règles d\'accès de Grist</strong> : refusez la lecture de la table <code>' + TABLE_CODES + '</code> et des colonnes <code>Votes.Code</code>, <code>Votes.Courriel</code> et <code>Votes.Bulletin</code> aux personnes qui ne sont pas propriétaires. Sinon un visiteur pourrait relire les codes ou les adresses. ' +
-      (niv.id === 'Compte Grist' ? 'Pour ce niveau, ajoutez aussi une règle qui n\'autorise l\'ajout d\'un vote que si la colonne <code>Votant</code> contient l\'adresse du compte qui écrit.' : 'Les points restent plafonnés comme dans l\'outil.') + '</p>';
+    h += '<p class="fr-text--sm"><strong>Protégez les données avec les règles d\'accès de Grist</strong> : la rubrique <em>Données</em> réserve la table <code>' + TABLE_CODES + '</code> aux propriétaires et pose les règles qui empêchent de voter au nom d\'une autre personne. ' + NOTE_REGLES + ' ' +
+      (niv.id === 'Compte Grist' ? '' : 'Les points restent plafonnés comme dans l\'outil.') + '</p>';
     return h;
   }
   function redessinerReglages() { if (vc.zone) { vc.zone.innerHTML = reglagesPropres(); brancherVoteControle(vc.zone); } }
@@ -961,7 +961,7 @@
       return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
       });
-    }).then(function () { return rafraichirVC('Contrôle du vote activé.'); })
+    }).then(function () { aclDonnees = null; return poserRegles(); }).then(function () { return rafraichirVC('Contrôle du vote activé. La table ' + TABLE_CODES + ' est réservée aux propriétaires (Réglages › Données).'); })
       .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; redessinerReglages(); });
   }
   function changerNiveau(valeur) {
@@ -1076,6 +1076,49 @@
     return acts;
   }
 
+  // Réglages › Données (commun/donnees.js) : tables partagées, règles d'accès proposées.
+  // Rien n'est modifié sans un clic d'un propriétaire.
+  var PARTAGE = [['Votants', 'aucun : séparée de Personnes à dessein', 'liste des personnes qui ont voté ; la page publique ne la lit jamais (secret du vote)'],
+    ['Votes', 'grist-questionnaire (formulaire de vote branché sur cette table, facultatif)', 'votes et soutiens']];
+  var REGLES_ACCES = [
+    { table: 'Votes', cols: '*', formule: 'user.Access != OWNER and newRec.Votant != user.Email', droits: '-CU',
+      memo: 'Un vote est enregistré au nom de la personne connectée', effet: 'un vote est toujours enregistré au nom de la personne connectée' },
+    { table: 'Votes', cols: '*', formule: 'user.Access != OWNER and rec.Votant != user.Email', droits: '-UD',
+      memo: 'On ne modifie ni ne retire le vote d\'une autre personne', effet: 'on ne modifie ni ne retire le vote d\'une autre personne (supprimer un critère qui a reçu des votes devient réservé aux propriétaires)' },
+    { table: 'Votants', cols: '*', formule: 'user.Access != OWNER and newRec.Email != user.Email', droits: '-CU',
+      memo: 'Chaque personne ne s\'inscrit qu\'à son nom', effet: 'chaque personne ne s\'inscrit qu\'à son nom' },
+    { table: 'Votants', cols: '*', formule: 'user.Access != OWNER and rec.Email != user.Email', droits: '-UD',
+      memo: 'On ne modifie pas l\'inscription d\'une autre personne', effet: 'on ne modifie pas l\'inscription d\'une autre personne' },
+    { table: TABLE_CODES, cols: '*', formule: 'user.Access != OWNER', droits: '-CRUD',
+      memo: 'Les codes de vote sont réservés aux propriétaires du document.', effet: 'les codes de vote ne sont lus et créés que par les propriétaires (le contrôle des votes par Grist continue de fonctionner)' }];
+  var NOTE_REGLES = 'Les colonnes <code>Votes.Code</code> et <code>Votes.Courriel</code> restent lisibles par les personnes qui ont accès au document, et par tout visiteur si le document est public. Pour les masquer, ajoutez à la main une règle de colonne qui refuse leur lecture à qui n\'est pas propriétaire, puis testez un vote en navigation privée. Ne masquez jamais <code>Votes.Bulletin</code> ni <code>Votes.Valide</code> : l\'outil en a besoin pour compter les votes.';
+  var aclDonnees = null;
+  function optionsDonnees() { return { demo: DEMO, tables: TABLES.concat(meta.tables.some(function (t) { return t.tableId === TABLE_CODES; }) ? [TABLE_CODES] : []), partage: PARTAGE, regles: REGLES_ACCES, noteRegles: NOTE_REGLES }; }
+  function rendreDonnees(zone) {
+    if (!window.DonneesLab) { zone.innerHTML = ''; return; }
+    if (!DEMO && !aclDonnees) DonneesLab.lire().then(function (a) { aclDonnees = a; if (configLab) configLab.rafraichir('donnees'); });
+    zone.innerHTML = DonneesLab.html(aclDonnees, meta, optionsDonnees());
+    if (zone.getAttribute('data-branche')) return;
+    zone.setAttribute('data-branche', '1');
+    zone.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-donnees]');
+      if (!b || b.disabled) return;
+      b.disabled = true;
+      DonneesLab.installerRegles(aclDonnees, meta, REGLES_ACCES).then(function (n) {
+        aclDonnees = null;
+        if (configLab) configLab.message('success', n + ' règle(s) d\'accès installée(s). Grist recharge le document.');
+        if (configLab) configLab.rafraichir('donnees');
+      }).catch(function (err) {
+        b.disabled = false;
+        if (configLab) configLab.message('error', 'Modification refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')');
+      });
+    });
+  }
+  function poserRegles() {
+    if (DEMO || PUBLIC || !window.DonneesLab) return Promise.resolve(null);
+    return DonneesLab.lire().then(function (acl) { return DonneesLab.installerRegles(acl, meta, REGLES_ACCES); }).catch(function () { return null; });
+  }
+
   var configLab = null, avantApercu = null;
   function monterCoque() {
     var z = document.getElementById('gd-coque');
@@ -1087,7 +1130,8 @@
       vue: { libelle: 'Consultations', element: app },
       ongletInitial: route().vue === 'reglages' ? 'reglages' : 'vue',
       page: brouillonReglages.page,
-      onglets: [{ id: 'reglages', libelle: 'Réglages', rendre: function (zone) { zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); } }],
+      onglets: [{ id: 'reglages', libelle: 'Général', rendre: function (zone) { zone.innerHTML = reglagesPropres(); brancherVoteControle(zone); } },
+        { id: 'donnees', libelle: 'Données', rendre: rendreDonnees }],
       // Aperçu réel : l'outil lui-même s'affiche sous l'en-tête, avec les listes en cours de saisie (même non enregistrées).
       surApercu: function (ouvert) {
         if (ouvert && configLab && configLab.estModifie() && brouillonReglages) {
@@ -1253,9 +1297,9 @@
         return grist.docApi.applyUserActions(ex);
       });
     }).then(function () {
-      etat.alerte = { type: 'success', texte: 'Outil installé.' + (avecExemple ? ' L\'exemple fictif est chargé (sans votes) : supprimez ses lignes quand vous voulez.' : '') };
+      etat.alerte = { type: 'success', texte: 'Outil installé.' + (avecExemple ? ' L\'exemple fictif est chargé (sans votes) : supprimez ses lignes quand vous voulez.' : '') + ' Les règles d\'accès proposées sont posées en même temps : vérifiez-les dans Réglages › Données.' };
       return charger();
-    }).then(identifier).then(rendre).catch(function (err) {
+    }).then(identifier).then(poserRegles).then(rendre).catch(function (err) {
       etat.alerte = { type: 'error', texte: 'Installation impossible : seuls les propriétaires du document peuvent créer des tables. (' + ((err && err.message) || err) + ')' };
       rendre();
     });

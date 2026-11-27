@@ -121,7 +121,7 @@ Aux niveaux **Ouvert** et **Code commun**, chaque envoi est un votant : on ne pe
 **Mise en place** (par un propriétaire du document) : bouton *Activer le contrôle du vote* (ou *Mettre à jour le contrôle du vote* pour un document installé avant les niveaux). L'outil ajoute la table `Codes_vote`, la colonne `Identification` dans `Consultations` et, dans `Votes`, les colonnes `Code`, `Courriel`, `Bulletin` et `Valide`. Les données existantes ne sont pas modifiées. Ensuite, par consultation : choisir le niveau ; en *Code commun*, créer le code ; en *Code individuel*, saisir une liste de destinataires (un code par ligne) ou un nombre de codes anonymes, *Créer les codes*, puis *Télécharger la liste (CSV)* pour envoyer chaque code à son destinataire. L'outil n'envoie aucun message.
 
 **À faire dans Grist** :
-1. Règles d'accès : refuser la lecture de la table `Codes_vote` et des colonnes `Votes.Code`, `Votes.Courriel` et `Votes.Bulletin` à qui n'est pas propriétaire. Sans cela, un visiteur peut relire les codes ou les adresses. Pour le niveau *Compte Grist*, ajouter une règle qui n'autorise l'ajout d'un vote que si la colonne `Votant` contient l'adresse du compte qui écrit.
+1. Règles d'accès : à l'activation, l'outil réserve la table `Codes_vote` aux propriétaires (voir *Protéger les votes par des règles d'accès*). Les colonnes `Votes.Code` et `Votes.Courriel` restent lisibles : pour les masquer, ajoutez à la main une règle de colonne qui refuse leur lecture à qui n'est pas propriétaire, puis testez un vote en navigation privée. Ne masquez jamais `Votes.Bulletin` ni `Votes.Valide` : l'outil en a besoin pour compter les votes (masquées, les votes par code seraient ignorés).
 2. Page de vote : un [grist-questionnaire](https://github.com/lab17bis/grist-questionnaire) branché sur la table `Votes`, avec les questions Consultation, Proposition, Valeur, et Code ou Courriel selon le niveau. L'adresse publique du questionnaire se renseigne dans l'onglet Publication (champ « lien de vote »). Les personnes ne voient que la page au design de l'État, jamais l'interface native de Grist.
 3. Assemblage : le [portail](https://github.com/lab17bis/grist-portail) affiche, sous une seule adresse, une page pour la consultation (la page publique de cet outil) et une page pour le vote (le questionnaire).
 
@@ -129,7 +129,7 @@ Aux niveaux **Ouvert** et **Code commun**, chaque envoi est un votant : on ne pe
 
 ## Protéger les votes par des règles d'accès
 
-Recommandé dès que plusieurs personnes votent. Dans Grist : **Règles d'accès** (panneau de gauche), **Ajouter des règles de table**, puis :
+Recommandé dès que plusieurs personnes votent. L'outil les pose lui-même, à l'installation des tables, à l'activation du contrôle du vote, ou par le bouton *Installer les règles proposées* de **Réglages › Données** (réservé aux propriétaires). Une règle n'est ajoutée que sur une table qui n'en a aucune : les règles existantes ne sont jamais modifiées. Pour les poser à la main : **Règles d'accès** (panneau de gauche), **Ajouter des règles de table**, puis :
 
 | Table | Condition | Permissions | Effet |
 |---|---|---|---|
@@ -137,8 +137,9 @@ Recommandé dès que plusieurs personnes votent. Dans Grist : **Règles d'accès
 | `Votes` | `user.Access != OWNER and rec.Votant != user.Email` | Refuser *Modifier* et *Supprimer* | On ne modifie ni ne retire le vote d'une autre personne. |
 | `Votants` | `user.Access != OWNER and newRec.Email != user.Email` | Refuser *Créer* et *Modifier* | Chaque personne ne s'inscrit qu'à son nom. |
 | `Votants` | `user.Access != OWNER and rec.Email != user.Email` | Refuser *Modifier* et *Supprimer* | On ne modifie pas l'inscription d'une autre personne. |
+| `Codes_vote` | `user.Access != OWNER` | Refuser *Créer*, *Lire*, *Modifier* et *Supprimer* | Les codes ne sont lus et créés que par les propriétaires. Le contrôle des votes par Grist continue de fonctionner (vérifié). |
 
-Les propriétaires du document gardent tous les droits (pour corriger ou nettoyer). Ces règles ont été vérifiées sur une instance Grist réelle : le widget fonctionne normalement, et un vote au nom d'une autre personne est refusé par Grist. Pour masquer en plus les votes individuels, ajoutez une règle de lecture sur la table `Votes`.
+Les propriétaires du document gardent tous les droits (pour corriger ou nettoyer). Conséquence : supprimer un critère qui a déjà reçu des votes devient réservé aux propriétaires. Ces règles ont été vérifiées sur une instance Grist réelle : le widget fonctionne normalement, et un vote au nom d'une autre personne est refusé par Grist. Pour masquer en plus les votes individuels, ajoutez une règle de lecture sur la table `Votes`.
 
 ## Version stable et version en cours
 
@@ -155,7 +156,7 @@ Plusieurs outils de la même famille peuvent travailler dans un même document G
 - **Une seule table `Personnes`** par document. Colonne commune : `Nom`. Colonnes facultatives reconnues par tous : `Email` et `Structure` (référence à `Structures`). Un outil lit cette table si elle existe et la crée seulement si elle manque. Il n'y ajoute que ses propres colonnes.
 - **Une seule table `Structures`** pour les équipes, services ou établissements : `Nom`, `Sigle`, `Type`, `Parent` (structure de rattachement).
 - **Aucun outil ne supprime ni ne renomme** une table ou une colonne qu'il n'a pas créée.
-- **Les autres tables portent des noms propres à chaque outil**, pour éviter les collisions (par exemple `Actions` pour grist-projet, `Actions_reunion` pour grist-consultation). Les réglages sont rangés dans la description d'une colonne technique propre à l'outil (`Config_…`).
+- **Les autres tables portent des noms propres à chaque outil**, pour éviter les collisions (par exemple `Actions` pour grist-projet, `Actions_reunion` pour grist-reunion). Les réglages sont rangés dans la description d'une colonne technique propre à l'outil (`Config_…`).
 - **Identifier la personne connectée** : un widget ne connaît pas l'adresse de la personne connectée. Les colonnes « créé par » utilisent une formule `user.Email` calculée à la création. Seul un outil qui doit relier la personne connectée à sa fiche crée la table `Comptes`.
 
 Ce que fait cet outil : il ne crée ni ne lit de table de personnes. Pour savoir qui vote, il utilise sa propre table `Votants` (adresse et nom remplis par Grist, une ligne par personne venue voter) : elle n'est pas reliée à `Personnes`.
