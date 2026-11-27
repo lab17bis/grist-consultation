@@ -2,6 +2,9 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-27 (accès au document)
+- Dans Grist, quand le widget ne peut pas lire le document (accès complet non accordé, ou compte sans droit de lecture), un message le dit et indique quoi faire, au lieu d'un outil vide ou d'un écran d'installation. Contrôle commun, dans `commun/barre.js`.
+
 ## 2026-11-27 (Réglages › Données)
 - Nouvelle rubrique *Réglages › Données* (fichier partagé `commun/donnees.js`) : tables partagées, état des règles d'accès, bouton *Installer les règles proposées*.
 - Les règles de `Votes` et `Votants` (déjà documentées) sont posées par l'outil à l'installation des tables ; la règle qui réserve `Codes_vote` aux propriétaires est posée à l'activation du contrôle du vote. Une règle n'est ajoutée que sur une table qui n'en a aucune.
