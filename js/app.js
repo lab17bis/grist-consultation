@@ -1082,13 +1082,13 @@
     ['Votes', 'grist-questionnaire (formulaire de vote branché sur cette table, facultatif)', 'votes et soutiens']];
   var REGLES_ACCES = [
     { table: 'Votes', cols: '*', formule: 'user.Access != OWNER and newRec.Votant != user.Email', droits: '-CU',
-      memo: 'Un vote est toujours enregistré au nom de la personne connectée.', effet: 'un vote est toujours enregistré au nom de la personne connectée' },
+      memo: 'Un vote est enregistré au nom de la personne connectée', effet: 'un vote est toujours enregistré au nom de la personne connectée' },
     { table: 'Votes', cols: '*', formule: 'user.Access != OWNER and rec.Votant != user.Email', droits: '-UD',
-      memo: 'On ne modifie ni ne retire le vote d’une autre personne.', effet: 'on ne modifie ni ne retire le vote d\'une autre personne (supprimer un critère qui a reçu des votes devient réservé aux propriétaires)' },
+      memo: 'On ne modifie ni ne retire le vote d\'une autre personne', effet: 'on ne modifie ni ne retire le vote d\'une autre personne (supprimer un critère qui a reçu des votes devient réservé aux propriétaires)' },
     { table: 'Votants', cols: '*', formule: 'user.Access != OWNER and newRec.Email != user.Email', droits: '-CU',
-      memo: 'Chaque personne ne s’inscrit qu’à son nom.', effet: 'chaque personne ne s\'inscrit qu\'à son nom' },
+      memo: 'Chaque personne ne s\'inscrit qu\'à son nom', effet: 'chaque personne ne s\'inscrit qu\'à son nom' },
     { table: 'Votants', cols: '*', formule: 'user.Access != OWNER and rec.Email != user.Email', droits: '-UD',
-      memo: 'On ne modifie pas l’inscription d’une autre personne.', effet: 'on ne modifie pas l\'inscription d\'une autre personne' },
+      memo: 'On ne modifie pas l\'inscription d\'une autre personne', effet: 'on ne modifie pas l\'inscription d\'une autre personne' },
     { table: TABLE_CODES, cols: '*', formule: 'user.Access != OWNER', droits: '-CRUD',
       memo: 'Les codes de vote sont réservés aux propriétaires du document.', effet: 'les codes de vote ne sont lus et créés que par les propriétaires (le contrôle des votes par Grist continue de fonctionner)' }];
   var NOTE_REGLES = 'Les colonnes <code>Votes.Code</code> et <code>Votes.Courriel</code> restent lisibles par les personnes qui ont accès au document, et par tout visiteur si le document est public. Pour les masquer, ajoutez à la main une règle de colonne qui refuse leur lecture à qui n\'est pas propriétaire, puis testez un vote en navigation privée. Ne masquez jamais <code>Votes.Bulletin</code> ni <code>Votes.Valide</code> : l\'outil en a besoin pour compter les votes.';
