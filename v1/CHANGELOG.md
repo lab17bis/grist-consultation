@@ -2,6 +2,9 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-28 (fichier partagé des données)
+- Fichier partagé `commun/donnees.js` mis à jour (identique dans grist-management, grist-reunion et grist-consultation) : il sait poser un attribut d'utilisateur (par exemple la fiche de la personne connectée) avec les règles d'accès proposées. Rien ne change pour cet outil.
+
 ## 2026-11-28 (échéance et liens par proposition)
 - **Échéance contrôlée par Grist** pour les votes publics : un vote reçu après le jour d'échéance est ignoré ; à la fermeture du vote, l'outil gèle les votes publics (colonne `Consultations.Cloture_vote`) : tout vote plus récent est ignoré, même avec une date falsifiée. Rouvrir le vote retire le gel.
 - Un vote dont la proposition (ou le critère) n'appartient pas à sa consultation est ignoré (votes publics et votes faits dans Grist).
