@@ -99,14 +99,16 @@ La page publique du widget ne permet pas de voter : elle est en lecture seule. P
 
 ## Identifier les votes sur la page publique
 
+**Recommandé** : pour une consultation interne, le niveau *Compte Grist* avec le lien réservé (une personne, un compte, un vote ; ni code ni courriel). Pour une consultation ouverte avec un enjeu, le *Code individuel* avec les liens de vote personnels. Sans compte ni code, aucun niveau ne garantit un vote par personne : Grist ne vérifie pas d'identité et n'envoie pas de courriel.
+
 Sur une page publique, Grist ne sait pas qui vote. Le niveau d'identification se choisit **consultation par consultation** (*Réglages › Identification des votes sur la page publique*, colonne `Consultations.Identification`). Un vote non reconnu est ignoré. Les cinq niveaux, du plus ouvert au plus strict :
 
 | Niveau | Ce que la personne fait | Pour quel usage | Limite |
 | --- | --- | --- | --- |
 | **Ouvert** | Rien | Sondage d'opinion sans enjeu | Doublons et envois automatiques possibles ; quotas valables par envoi seulement |
-| **Courriel déclaré** | Saisit son adresse ; un vote retenu par adresse | Décourager les doublons maladroits sans fabriquer de codes | Adresse non vérifiée : on peut en inventer ou emprunter celle d'une autre personne |
+| **Courriel déclaré** | Saisit son adresse ; un vote retenu par adresse | Décourager les doublons maladroits sans fabriquer de codes | Adresse jamais vérifiée (Grist n'envoie pas de courriel) : on peut en inventer ou emprunter celle d'une autre personne ; décourage les doublons, sans plus |
 | **Code commun** | Saisit le code donné à tout le groupe | Réserver le vote à un groupe fermé sans liste nominative | Le code filtre qui vote, pas combien de fois ; un code qui circule ouvre le vote |
-| **Code individuel** | Saisit son code personnel, à usage unique par proposition | Vote nominatif ou à enjeu | Fabriquer et distribuer les codes, protéger leur table |
+| **Code individuel** | Clique sur son lien de vote personnel (code déjà rempli) ou saisit son code, à usage unique par proposition | Vote nominatif ou à enjeu | Distribuer les liens ; un lien transmis à une autre personne lui donne ce vote |
 | **Compte Grist** | Se connecte à Grist | Garantie la plus élevée : l'identité est celle du compte | Compte et accès au document nécessaires ; ce n'est plus une page publique |
 
 Ce que Grist contrôle dans tous les cas (colonnes calculées `Bulletin` et `Valide`, donc aussi pour les votes déposés par un formulaire Grist) :
@@ -118,7 +120,7 @@ Ce que Grist contrôle dans tous les cas (colonnes calculées `Bulletin` et `Val
 
 Aux niveaux **Ouvert** et **Code commun**, chaque envoi est un votant : on ne peut pas limiter le nombre de voix par personne, seulement par envoi.
 
-**Mise en place** (par un propriétaire du document) : bouton *Activer le contrôle du vote* (ou *Mettre à jour le contrôle du vote* pour un document installé avant les niveaux). L'outil ajoute la table `Codes_vote`, la colonne `Identification` dans `Consultations` et, dans `Votes`, les colonnes `Code`, `Courriel`, `Bulletin` et `Valide`. Les données existantes ne sont pas modifiées. Ensuite, par consultation : choisir le niveau ; en *Code commun*, créer le code ; en *Code individuel*, saisir une liste de destinataires (un code par ligne) ou un nombre de codes anonymes, *Créer les codes*, puis *Télécharger la liste (CSV)* pour envoyer chaque code à son destinataire. L'outil n'envoie aucun message.
+**Mise en place** (par un propriétaire du document) : bouton *Activer le contrôle du vote* (ou *Mettre à jour le contrôle du vote* pour un document installé avant les niveaux). L'outil ajoute la table `Codes_vote`, la colonne `Identification` dans `Consultations` et, dans `Votes`, les colonnes `Code`, `Courriel`, `Bulletin` et `Valide`. Les données existantes ne sont pas modifiées. Ensuite, par consultation : choisir le niveau ; en *Code commun*, créer le code ; en *Code individuel*, saisir une liste de destinataires (un code par ligne) ou un nombre de codes anonymes, puis *Générer les codes*. Chaque code a un **lien de vote personnel** : le lien du formulaire de vote (onglet *Publication*) avec le code déjà rempli (`?pre_Code=…`, lu par grist-questionnaire) ; la personne clique, elle ne tape rien. Les 50 premiers codes s'affichent avec un bouton *Copier le lien* ; *Télécharger la liste (CSV)* donne tous les codes et leurs liens, pour envoyer à chacun le sien. L'outil n'envoie aucun message.
 
 **À faire dans Grist** :
 1. Règles d'accès : à l'activation, l'outil réserve la table `Codes_vote` aux propriétaires (voir *Protéger les votes par des règles d'accès*). Les colonnes `Votes.Code` et `Votes.Courriel` restent lisibles : pour les masquer, ajoutez à la main une règle de colonne qui refuse leur lecture à qui n'est pas propriétaire, puis testez un vote en navigation privée. Ne masquez jamais `Votes.Bulletin` ni `Votes.Valide` : l'outil en a besoin pour compter les votes (masquées, les votes par code seraient ignorés).

@@ -48,7 +48,7 @@
     { id: 'Courriel déclaré', titre: 'Courriel déclaré', public: 'Indiquez votre adresse électronique : un seul vote est retenu par adresse.',
       resume: 'La personne saisit son adresse ; un vote est retenu par adresse.',
       pourquoi: 'Pour décourager les doublons maladroits sans fabriquer de codes.',
-      limite: 'L\'adresse n\'est pas vérifiée : on peut voter avec l\'adresse d\'une autre personne ou en inventer. À réserver aux enjeux modérés.' },
+      limite: 'L\'adresse n\'est jamais vérifiée (Grist n\'envoie pas de courriel) : on peut voter avec l\'adresse d\'une autre personne ou en inventer. Décourage les doublons, sans plus. À réserver aux enjeux modérés.' },
     { id: 'Code commun', titre: 'Code commun', public: 'Pour voter, munissez-vous du code communiqué par l\'organisateur.',
       resume: 'Un seul code, communiqué à tout le groupe (réunion, message interne).',
       pourquoi: 'Pour réserver le vote à un groupe fermé sans gérer de listes nominatives.',
@@ -56,7 +56,7 @@
     { id: 'Code individuel', titre: 'Code individuel', public: 'Pour voter, munissez-vous de votre code personnel.',
       resume: 'Un code par personne, à usage unique par proposition.',
       pourquoi: 'Pour un vote nominatif ou à enjeu : un code, une voix, quotas respectés.',
-      limite: 'Demande de fabriquer et de distribuer les codes, et de protéger leur table avec les règles d\'accès de Grist.' },
+      limite: 'Demande de distribuer les codes. L\'outil les génère et donne pour chacun un lien de vote personnel où le code est déjà rempli : la personne clique, elle ne tape rien. Un lien transmis à une autre personne lui donne ce vote.' },
     { id: 'Compte Grist', titre: 'Compte Grist', public: 'Pour voter, connectez-vous à Grist.',
       resume: 'Seules les personnes connectées à Grist, avec accès au document, votent.',
       pourquoi: 'Pour le niveau de garantie le plus élevé : l\'identité est celle du compte.',
@@ -854,6 +854,13 @@
   }
   function codeAffiche(c) { return String(c || '').replace(/^(.{4})(.+)$/, '$1-$2'); }
   var vc = { consultation: 0, message: null, zone: null };
+  // Lien de vote personnel : le lien du formulaire, avec le code déjà rempli (paramètre pre_Code, lu par grist-questionnaire).
+  function lienPersonnel(c, code) {
+    var u = lienVote(c);
+    var base = u && adresse(u);
+    if (!base || !code) return '';
+    try { var x = new URL(base); x.searchParams.set('pre_Code', code); return x.href; } catch (e) { return ''; }
+  }
   function codesDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid && x.Destinataire !== CODE_COMMUN; }); }
   function codeCommunDe(cid) { return (data.Codes_vote || []).filter(function (x) { return num(x.Consultation) === cid && x.Destinataire === CODE_COMMUN; })[0] || null; }
   // Le contrôle est-il installé, et à jour (formule d'identité, colonnes Courriel et Identification) ?
@@ -865,6 +872,7 @@
   function blocVoteControle() {
     var h = '<h2 class="fr-h5 fr-mt-4w">Identification des votes sur la page publique</h2>' +
       '<p class="fr-text--sm">Quand le vote passe par une page publique, Grist ne sait pas qui vote. Choisissez, consultation par consultation, comment reconnaître les votantes et les votants. Plus le niveau est strict, plus il demande de préparation. Un vote non reconnu est ignoré.</p>' +
+      '<div class="fr-callout fr-mb-2w"><p class="fr-callout__text fr-text--sm"><strong>Recommandé.</strong> Consultation interne : <em>Compte Grist</em>, avec le lien réservé (une personne, un compte, un vote ; ni code ni courriel). Consultation ouverte avec un enjeu : <em>Code individuel</em>, avec les liens de vote personnels. Sans compte ni code, aucun niveau ne garantit un vote par personne : Grist ne vérifie pas d\'identité et n\'envoie pas de courriel.</p></div>' +
       '<ul class="fr-text--sm">' + NIVEAUX.map(function (n) { return '<li><strong>' + esc(n.titre) + '</strong> : ' + esc(n.resume) + ' ' + esc(n.pourquoi) + ' <em>Limite : ' + esc(n.limite) + '</em></li>'; }).join('') + '</ul>';
     if (DEMO) return h + '<p class="fr-text--sm">Disponible dans Grist, par un propriétaire du document.</p>';
     if (!controleInstalle() || !controleAJour()) {
@@ -890,12 +898,25 @@
     }
     if (niv.id === 'Code individuel') {
       var codes = codesDe(vc.consultation), utilises = codes.filter(function (x) { return x.Utilise; }).length;
+      var lienForm = lienVote(cons);
+      h += '<p class="fr-text--sm">Chaque code a un <strong>lien de vote personnel</strong> : le formulaire s\'ouvre avec le code déjà rempli (colonne <code>Code</code> du formulaire). Envoyez à chaque personne son propre lien.' +
+        (lienForm ? '' : ' <strong>Pour obtenir ces liens, renseignez d\'abord le lien du formulaire de vote dans l\'onglet Publication.</strong>') + '</p>';
       h += '<div class="fr-input-group"><label class="fr-label" for="vc-destinataires">Destinataires<span class="fr-hint-text">Un nom ou une adresse par ligne : un code est créé pour chacun. Laissez vide pour créer un nombre de codes anonymes.</span></label>' +
         '<textarea class="fr-input" rows="4" id="vc-destinataires"></textarea></div>' +
         '<div class="fr-input-group"><label class="fr-label" for="vc-nombre">Nombre de codes anonymes</label><input class="fr-input" type="number" min="1" max="500" id="vc-nombre" value="10"></div>' +
-        '<ul class="fr-btns-group fr-btns-group--inline-sm"><li><button type="button" class="fr-btn" data-vc="generer">Créer les codes</button></li>' +
+        '<ul class="fr-btns-group fr-btns-group--inline-sm"><li><button type="button" class="fr-btn" data-vc="generer">Générer les codes</button></li>' +
         '<li><button type="button" class="fr-btn fr-btn--secondary" data-vc="csv"' + (codes.length ? '' : ' disabled') + '>Télécharger la liste (CSV)</button></li></ul>' +
         '<p class="fr-text--sm">' + codes.length + ' code' + (codes.length > 1 ? 's' : '') + ' pour cette consultation, ' + utilises + ' utilisé' + (utilises > 1 ? 's' : '') + '.</p>';
+      if (codes.length) {
+        var montres = codes.slice(0, 50);
+        h += '<div class="fr-table fr-table--sm fr-table--no-caption"><table><caption>Codes et liens de vote</caption><thead><tr><th scope="col">Destinataire</th><th scope="col">Code</th><th scope="col">Utilisé</th><th scope="col">Lien personnel</th></tr></thead><tbody>' +
+          montres.map(function (x) {
+            var l = lienPersonnel(cons, x.Code);
+            return '<tr><td>' + esc(x.Destinataire || '—') + '</td><td class="gd-code">' + esc(codeAffiche(x.Code)) + '</td><td>' + (x.Utilise ? 'oui' : 'non') + '</td><td>' +
+              (l ? '<button type="button" class="fr-btn fr-btn--sm fr-btn--tertiary-no-outline" data-vc="copier" data-lien="' + esc(l) + '">Copier le lien</button>' : '—') + '</td></tr>';
+          }).join('') + '</tbody></table></div>' +
+          (codes.length > montres.length ? '<p class="fr-text--sm">Les ' + montres.length + ' premiers codes sont affichés ; la liste complète, avec les liens, est dans le fichier CSV.</p>' : '');
+      }
     }
     if (vc.message) h += '<p class="fr-text--sm" role="status">' + esc(vc.message) + '</p>';
     h += '<p class="fr-text--sm"><strong>Protégez les données avec les règles d\'accès de Grist</strong> : la rubrique <em>Données</em> réserve la table <code>' + TABLE_CODES + '</code> aux propriétaires et pose les règles qui empêchent de voter au nom d\'une autre personne. ' + NOTE_REGLES + ' ' +
@@ -934,6 +955,10 @@
       else if (a === 'generer') genererCodes();
       else if (a === 'commun') genererCodeCommun();
       else if (a === 'csv') telechargerCodes();
+      else if (a === 'copier') {
+        var l = b.getAttribute('data-lien');
+        (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject()).then(function () { b.textContent = 'Lien copié'; }, function () { window.prompt('Lien de vote personnel', l); });
+      }
     });
   }
   function rafraichirVC(msg) {
@@ -989,8 +1014,8 @@
       .catch(function (err) { vc.message = 'Création refusée par Grist. (' + ((err && err.message) || err) + ')'; redessinerReglages(); });
   }
   function telechargerCodes() {
-    var lien = lienVote(consultation(vc.consultation)) || '';
-    var lignes = [['Destinataire', 'Code', 'Utilisé', 'Lien du formulaire']].concat(codesDe(vc.consultation).map(function (x) { return [x.Destinataire || '', codeAffiche(x.Code), x.Utilise ? 'oui' : 'non', lien]; }));
+    var cons = consultation(vc.consultation);
+    var lignes = [['Destinataire', 'Code', 'Utilisé', 'Lien de vote personnel']].concat(codesDe(vc.consultation).map(function (x) { return [x.Destinataire || '', codeAffiche(x.Code), x.Utilise ? 'oui' : 'non', lienPersonnel(cons, x.Code)]; }));
     var csv = '﻿' + lignes.map(function (l) { return l.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'codes-de-vote.csv';
@@ -1181,6 +1206,8 @@
       meta.colConfig = true; meta.nomColConfig = nomCol; appliquerReglages(b);
       if (configLab) { configLab.enregistre(); configLab.message('success', 'Réglages enregistrés.'); }
       rendre();
+      // Les liens de vote personnels (Réglages) dépendent du lien de vote réglé dans Publication.
+      redessinerReglages();
     }).catch(function (err) {
       if (configLab) configLab.message('error', 'Enregistrement impossible : seuls les propriétaires du document peuvent modifier les réglages. (' + ((err && err.message) || err) + ')');
     });

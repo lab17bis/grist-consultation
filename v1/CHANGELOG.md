@@ -2,6 +2,11 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-28 (liens de vote personnels)
+- **Liens de vote personnels** : en *Code individuel*, chaque code a un lien vers le formulaire de vote où le code est déjà rempli (`?pre_Code=…`). Bouton *Copier le lien* pour les 50 premiers codes, liens complets dans le CSV. Le bouton devient *Générer les codes*.
+- **Recommandation** affichée avant les niveaux : *Compte Grist* avec le lien réservé pour une consultation interne ; *Code individuel* avec liens personnels pour une consultation ouverte à enjeu. Le niveau *Courriel déclaré* dit clairement que l'adresse n'est jamais vérifiée.
+- Correction : après l'enregistrement des réglages, la rubrique Réglages est redessinée (les liens personnels suivent le lien de vote réglé dans Publication).
+
 ## 2026-11-27 (accès au document)
 - Barre de l'éditeur : le nom du widget et son statut restent sur une ligne ; la barre ne change plus de hauteur quand le statut passe à « non enregistré ».
 - Dans Grist, quand le widget ne peut pas lire le document (accès complet non accordé, ou compte sans droit de lecture), un message le dit et indique quoi faire, au lieu d'un outil vide ou d'un écran d'installation. Contrôle commun, dans `commun/barre.js`.
