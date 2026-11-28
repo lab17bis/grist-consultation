@@ -2,6 +2,10 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-28 (statut de l'éditeur)
+- Barre de l'éditeur : le statut affiche « Non enregistré » (au lieu de « Modifications non enregistrées »), plus court ; la barre ne passe plus sur deux lignes sur un écran étroit.
+- Générer les codes de vote ou le code commun agit tout de suite dans le document : cette action ne rend plus les réglages « non enregistrés ».
+
 ## 2026-11-28 (liens de vote personnels)
 - **Liens de vote personnels** : en *Code individuel*, chaque code a un lien vers le formulaire de vote où le code est déjà rempli (`?pre_Code=…`). Bouton *Copier le lien* pour les 50 premiers codes, liens complets dans le CSV. Le bouton devient *Générer les codes*.
 - **Recommandation** affichée avant les niveaux : *Compte Grist* avec le lien réservé pour une consultation interne ; *Code individuel* avec liens personnels pour une consultation ouverte à enjeu. Le niveau *Courriel déclaré* dit clairement que l'adresse n'est jamais vérifiée.

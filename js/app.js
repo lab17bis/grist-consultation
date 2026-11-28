@@ -795,7 +795,7 @@
       h += '<div class="fr-input-group"><label class="fr-label" for="rg-' + l[0] + '">' + esc(l[1]) + '<span class="fr-hint-text">Colonne ' + l[2] + '.' + l[3] + '. ' + esc(l[4]) + '</span></label>' +
         '<textarea class="fr-input" rows="5" id="rg-' + l[0] + '">' + esc((b.listes[l[0]] && b.listes[l[0]].length ? b.listes[l[0]] : DEFAUTS[l[0]]).join('\n')) + '</textarea></div>';
     });
-    return h + blocChampsPerso() + blocVoteControle() + '</div>';
+    return h + blocChampsPerso() + '<div data-cl-hors-reglages>' + blocVoteControle() + '</div></div>';
   }
   // --- Vote public contrôlé : codes personnels -------------------------------
 

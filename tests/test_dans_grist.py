@@ -141,6 +141,7 @@ with sync_playwright() as p:
     verifier('recommandation affichée (Compte Grist en interne, code individuel avec liens)', 'Recommandé.' in f.locator('body').inner_text())
     verifier('code individuel : sans lien de formulaire, la marche à suivre est indiquée', 'renseignez d\'abord le lien du formulaire de vote' in f.locator('body').inner_text())
     f.locator('#vc-nombre').fill('3'); f.get_by_role('button', name='Générer les codes').click(); pg.wait_for_timeout(500)
+    verifier('code individuel : générer des codes ne rend pas les réglages « non enregistrés »', 'Non' not in f.locator('.cl-titre .fr-badge').inner_text())
     verifier('code individuel : trois codes créés, sans toucher au code commun', len([x for x in mock(pg)['tables']['Codes_vote']['lignes'] if x.get('Destinataire') != 'Code commun']) == 3)
     # Liens de vote personnels : le lien du formulaire (Publication), avec le code déjà rempli.
     f.locator('.cl-barre .cl-onglets label', has_text='Publication').click()
