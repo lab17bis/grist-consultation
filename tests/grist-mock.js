@@ -50,6 +50,7 @@
   var docApi = {
     fetchTable: function (t) {
       if (t === '_grist_Tables' || t === '_grist_Tables_column') return Promise.resolve(meta()[t]);
+      if (t === '_grist_Views_section') return M.sections ? Promise.resolve(M.sections) : Promise.reject(new Error('Table not found'));
       if (!doc[t]) return Promise.reject(new Error('Table not found "' + t + '"'));
       return Promise.resolve(colonnes(t));
     },

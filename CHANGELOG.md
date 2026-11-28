@@ -2,6 +2,13 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-28 (vote public : table séparée, données protégées)
+- **Correction de sécurité.** Un formulaire Grist publié peut écrire toutes les colonnes de sa table sans que les règles d'accès s'appliquent (limite de Grist, constatée sur grist.numerique.gouv.fr) : publié sur `Votes`, il permettait de voter au nom de n'importe quelle personne en remplissant `Votant`, même au niveau *Compte Grist*. Les votes du formulaire public vont désormais dans une nouvelle table `Votes_publics`, sans colonne `Votant`, avec ses propres colonnes `Bulletin` et `Valide`. L'outil signale un formulaire encore publié sur `Votes`.
+- Les votes faits dans Grist sont reconnus par un numéro (« u: »), jamais par l'adresse du compte, et passent par le même contrôle que les autres (une voix par proposition, plafond de points). Au niveau *Ouvert*, une personne connectée n'est plus comptée comme plusieurs participants. Une adresse de courriel déclarée n'apparaît plus dans `Bulletin`.
+- Nouvelles règles d'accès proposées (Réglages › Données, et à l'activation) : codes et adresses de `Votes_publics` lus par les propriétaires seulement ; votes publics modifiés ou retirés par les propriétaires seulement ; liste des votants et colonnes `Votes.Votant`, `Votes.Code`, `Votes.Courriel` illisibles sans compte (documents publics).
+- Documents existants : bouton *Mettre à jour le contrôle du vote* (ajoute `Votes_publics` et met à jour les formules ; aucune donnée retirée). Republiez ensuite le formulaire de vote sur `Votes_publics`.
+- Aide du lien de vote corrigée : avec grist-questionnaire, le lien se termine par `&pre_Consultation={consultation}` (l'exemple `?consultation=` ne préremplissait rien).
+
 ## 2026-11-28 (statut de l'éditeur)
 - Barre de l'éditeur : le statut affiche « Non enregistré » (au lieu de « Modifications non enregistrées »), plus court ; la barre ne passe plus sur deux lignes sur un écran étroit.
 - Générer les codes de vote ou le code commun agit tout de suite dans le document : cette action ne rend plus les réglages « non enregistrés ».

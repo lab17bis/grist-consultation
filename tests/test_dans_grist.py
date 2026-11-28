@@ -77,6 +77,25 @@ with sync_playwright() as p:
     texte = f.locator('body').inner_text()
     verifier('vote par code : 2 participants (1 code valide + 1 personne connectée) ; doublon, code inconnu et anonyme sans code ignorés', '2 participants' in texte)
     pg.close()
+    # --- Votes du formulaire public (table Votes_publics) : comptés s'ils sont validés, Votant jamais lu ;
+    # votes faits dans Grist reconnus par leur bulletin « u: » (un participant même avec deux votes).
+    doc['Votes']['lignes'] = [
+        {'id': 5, 'Consultation': cid, 'Proposition': pids[1], 'Valeur': 1, 'Votant': 'collegue@exemple.fr', 'Bulletin': 'u:5', 'Valide': True},
+        {'id': 6, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Votant': 'collegue@exemple.fr', 'Bulletin': 'u:5', 'Valide': True}]
+    doc['Votes_publics'] = {'colonnes': {'Consultation': {'type': 'Ref:Consultations'}, 'Proposition': {'type': 'Ref:Propositions'}, 'Valeur': {'type': 'Numeric'},
+        'Code': {'type': 'Text'}, 'Bulletin': {'type': 'Text', 'isFormula': True, 'formula': 'x'}, 'Valide': {'type': 'Bool', 'isFormula': True, 'formula': 'x'}}, 'lignes': [
+        {'id': 1, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Code': 'AAAABBBB', 'Bulletin': 'c:1', 'Valide': True, 'Votant': 'directeur@exemple.fr'},
+        {'id': 2, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Code': 'AAAABBBB', 'Bulletin': 'c:1', 'Valide': False},
+        {'id': 3, 'Consultation': cid, 'Proposition': pids[0], 'Valeur': 1, 'Code': '', 'Bulletin': '', 'Valide': False, 'Votant': 'directeur@exemple.fr'}]}
+    pg, f = ouvrir(b, 8781, dict(m4, tables=doc), erreurs)
+    f.locator('.gd-cartes').first.wait_for(); pg.wait_for_timeout(300)
+    texte = f.locator('body').inner_text()
+    verifier('votes publics : 2 participants (1 compte avec deux votes + 1 code) ; envoi invalide et Votant écrit par le formulaire ignorés', '2 participants' in texte)
+    f.locator('.gd-cartes a').first.click(); f.locator('.cl-barre').first.wait_for(); pg.wait_for_timeout(200)
+    f.get_by_role('link', name='Résultats et suites').first.click() if f.get_by_role('link', name='Résultats et suites').count() else f.get_by_role('button', name='Résultats et suites').first.click()
+    pg.wait_for_timeout(400)
+    verifier('votes publics : le vote par code s\'ajoute au vote fait dans Grist sur la même proposition', '2 soutiens' in f.locator('body').inner_text())
+    pg.close()
     # --- Champs supplémentaires des propositions : formulaire de dépôt, enregistrement dans la colonne, fiche
     m5 = {'tables': {'Table1': {'colonnes': {'A': {'type': 'Text'}}, 'lignes': []}}, 'table': 'Table1', 'utilisateur': {'email': 'agent@exemple.fr', 'nom': 'Agent Test'}}
     pg, f = ouvrir(b, 8781, m5, erreurs)
@@ -125,6 +144,12 @@ with sync_playwright() as p:
     d = mock(pg)['tables']
     verifier('niveaux : colonnes Identification, Courriel, Bulletin (texte) et table des codes créées',
              'Identification' in d['Consultations']['colonnes'] and 'Courriel' in d['Votes']['colonnes'] and d['Votes']['colonnes']['Bulletin']['type'] == 'Text' and 'Codes_vote' in d)
+    vp = d.get('Votes_publics', {}).get('colonnes', {})
+    verifier('votes publics : table Votes_publics créée sans colonne Votant, avec Bulletin et Valide propres',
+             'Votant' not in vp and 'Code' in vp and 'Courriel' in vp and 'Votes_publics.lookupRecords' in vp.get('Valide', {}).get('formula', '') and 'Codes_vote' in vp.get('Bulletin', {}).get('formula', ''))
+    verifier('votes publics : un code est « utilisé » aussi par un vote du formulaire public', 'Votes_publics' in d['Codes_vote']['colonnes']['Utilise']['formula'])
+    verifier('votes faits dans Grist : reconnus par un numéro, jamais par l\'adresse', "'u:%d' % min(" in d['Votes']['colonnes']['Bulletin']['formula'])
+    verifier('consigne : le formulaire de vote se publie sur Votes_publics', 'publiez-le sur la table Votes_publics' in f.locator('body').inner_text())
     verifier('niveaux : les cinq niveaux sont proposés', f.locator('#vc-niveau option').count() == 5)
     f.locator('#vc-niveau').select_option('Code commun')
     f.get_by_role('button', name='Créer le code commun').wait_for()
@@ -153,6 +178,24 @@ with sync_playwright() as p:
     codes = [x['Code'] for x in mock(pg)['tables']['Codes_vote']['lignes'] if x.get('Destinataire') != 'Code commun']
     l0 = liens.first.get_attribute('data-lien') if liens.count() else ''
     verifier('liens personnels : un lien par code, code prérempli', liens.count() == 3 and 'pre_Code=' in l0 and any(c in l0 for c in codes) and 'consultation=1' in l0)
+    pg.close()
+    # Alerte : formulaire Grist publié sur la table Votes
+    pg, f = ouvrir(b, 8781, m5, erreurs)
+    f.get_by_role('button', name='Créer les tables avec un exemple fictif').click(); f.locator('.gd-cartes').first.wait_for()
+    f.locator('.cl-barre .cl-onglets label', has_text='Réglages').click()
+    f.get_by_role('button', name='Activer le contrôle du vote').click(); f.locator('#vc-niveau').wait_for()
+    doc = mock(pg)['tables']; pg.close()
+    doc['_grist_ACLResources'] = {'colonnes': {'tableId': {'type': 'Text'}, 'colIds': {'type': 'Text'}}, 'lignes': [{'id': 1, 'tableId': '', 'colIds': ''}]}
+    doc['_grist_ACLRules'] = {'colonnes': {'resource': {'type': 'Int'}, 'aclFormula': {'type': 'Text'}, 'permissionsText': {'type': 'Text'}, 'memo': {'type': 'Text'}, 'rulePos': {'type': 'Numeric'}}, 'lignes': []}
+    tref = [k for k in doc.keys() if not k.startswith('_grist')].index('Votes') + 1
+    sections = {'id': [1, 2], 'tableRef': [tref, tref], 'parentKey': ['record', 'form'], 'shareOptions': ['', '{"publish":true,"form":true}']}
+    pg, f = ouvrir(b, 8781, dict(m5, tables=doc, sections=sections), erreurs)
+    f.locator('.gd-cartes').first.wait_for()
+    f.locator('.cl-barre .cl-onglets label', has_text='Réglages').click(); f.locator('#vc-niveau').wait_for()
+    verifier('alerte : formulaire publié sur Votes signalé', 'Un formulaire Grist est publié sur la table Votes' in f.locator('body').inner_text())
+    f.locator('label', has_text='Données').first.click(); pg.wait_for_timeout(500)
+    t = f.locator('body').inner_text()
+    verifier('données : règles proposées pour Votes_publics, Votants et Votes.Votant (contrôle à jour)', 'Votes_publics.Code, Courriel' in t and 'Votants.Email, Nom' in t and 'Votes.Votant, Code, Courriel' in t)
     pg.close()
     # Mise à jour d'un contrôle installé avant les niveaux (Bulletin numérique)
     pg, f = ouvrir(b, 8781, m5, erreurs)
