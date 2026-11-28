@@ -206,7 +206,21 @@
     }
   }
 
-  function charger() { return (DEMO ? chargerDemo() : chargerGrist()).then(indexer); }
+  function charger() { return (DEMO ? chargerDemo() : chargerGrist()).then(indexer).then(function () { if (!DEMO && !PUBLIC) gelerVotesPublics(); }); }
+  // Gel des votes publics : quand le vote d'une consultation est fermé (échéance passée, phase changée), l'outil note
+  // le numéro du dernier vote public reçu ; Grist ignore ensuite tout vote public plus récent, même si sa date a été
+  // falsifiée. Rouvrir le vote retire le gel. Écrit par toute personne qui peut modifier les consultations ; sans droit, rien.
+  function gelerVotesPublics() {
+    if (!colonne('Consultations', 'Cloture_vote') || !tableExiste(TABLE_PUBLICS)) return;
+    var dernier = (data.Votes_publics || []).reduce(function (m, v) { return Math.max(m, num(v.id)); }, 0) || -1;
+    var acts = [];
+    (data.Consultations || []).forEach(function (c) {
+      var gel = num(c.Cloture_vote);
+      if (!voteOuvert(c) && !gel) acts.push(['UpdateRecord', 'Consultations', c.id, { Cloture_vote: dernier }]);
+      else if (voteOuvert(c) && gel) acts.push(['UpdateRecord', 'Consultations', c.id, { Cloture_vote: 0 }]);
+    });
+    if (acts.length) grist.docApi.applyUserActions(acts).catch(function () { /* lecture seule : le gel attendra une autre personne */ });
+  }
   function indexer() {
     idx = {};
     TABLES.forEach(function (t) { idx[t] = {}; (data[t] || []).forEach(function (l) { idx[t][l.id] = l; }); });
@@ -492,11 +506,23 @@
     var u = reglages.publication && reglages.publication.lienVote;
     return u ? String(u).replace(/\{consultation\}/g, c ? c.id : '') : '';
   }
-  function appelVote(c) {
+  // Lien de vote pour une proposition : le formulaire s'ouvre avec la proposition déjà choisie (pre_Proposition).
+  // En notation, une réponse ne porte qu'un critère : le lien reste celui de la consultation.
+  function lienVoteProposition(c, p) {
+    var u = adresse(lienVote(c));
+    if (!u || !p || c.Mode === 'Notation') return u;
+    try { var x = new URL(u); x.searchParams.set('pre_Proposition', p.id); return x.href; } catch (e) { return u; }
+  }
+  function appelVote(c, p) {
     var u = lienVote(c);
     if (!PUBLIC || !u || !voteOuvert(c)) return '';
-    return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">Pour voter ou déposer une proposition, répondez au questionnaire. ' + esc(niveauDe(c).public) + '</p>' +
-      '<a class="fr-btn fr-mt-1w" href="' + esc(adresse(u)) + '" target="_blank" rel="noopener" title="Voter - nouvelle fenêtre">Voter</a></div>';
+    var lien = lienVoteProposition(c, p), pourProp = p && c.Mode !== 'Notation';
+    return '<div class="fr-callout gd-bandeau"><p class="fr-callout__text">' + (pourProp ? 'Pour voter pour cette proposition, répondez au questionnaire : elle y est déjà choisie. ' : 'Pour voter ou déposer une proposition, répondez au questionnaire. ') + esc(niveauDe(c).public) + '</p>' +
+      '<a class="fr-btn fr-mt-1w" href="' + esc(lien) + '" target="_blank" rel="noopener" title="' + (pourProp ? 'Voter pour cette proposition' : 'Voter') + ' - nouvelle fenêtre">' + (pourProp ? 'Voter pour cette proposition' : 'Voter') + '</a></div>';
+  }
+  function lienVoteCarte(c, p) {
+    if (!PUBLIC || !lienVote(c) || !voteOuvert(c) || c.Mode === 'Notation') return '';
+    return '<a class="fr-btn fr-btn--sm fr-btn--secondary" href="' + esc(lienVoteProposition(c, p)) + '" target="_blank" rel="noopener" title="Voter pour ' + esc(p.Titre || 'cette proposition') + ' - nouvelle fenêtre">Voter<span class="fr-sr-only"> : ' + esc(p.Titre) + '</span></a>';
   }
   function blocLectureSeule() {
     if (PUBLIC) return '';
@@ -607,7 +633,7 @@
       '<h2 class="fr-h6 gd-prop__titre"><a href="#/c/' + c.id + '/p/' + p.id + '">' + esc(p.Titre || 'Sans titre') + '</a></h2>' +
       (auteur ? '<p class="gd-meta">' + esc(auteur) + '</p>' : '') +
       (extrait ? '<p class="fr-text--sm gd-prop__extrait">' + esc(extrait) + '</p>' : '') + '</div>' +
-      '<div class="gd-prop__pied">' + controleVote(c, p, r) + (r ? '<span class="gd-score">' + esc(scoreTexte(c, r)) + '</span>' : '') + '</div></article>';
+      '<div class="gd-prop__pied">' + controleVote(c, p, r) + lienVoteCarte(c, p) + (r ? '<span class="gd-score">' + esc(scoreTexte(c, r)) + '</span>' : '') + '</div></article>';
   }
 
   function vuePropositions(c) {
@@ -672,7 +698,7 @@
       (p.Suite ? '<div class="fr-callout gd-suite"><h2 class="fr-callout__title fr-h6">Suite donnée</h2><p class="fr-callout__text">' + texteMultiligne(p.Suite) + '</p></div>' : '') +
       '</div><aside class="gd-fiche__cote">' +
       (infos.length ? '<dl class="gd-infos">' + infos.map(function (i) { return '<dt>' + esc(i[0]) + '</dt><dd>' + esc(i[1]) + '</dd>'; }).join('') + '</dl>' : '') +
-      (PUBLIC ? appelVote(c) : '') +
+      (PUBLIC ? appelVote(c, p) : '') +
       (voteOuvert(c) && !lectureSeule ? '<h2 class="fr-h6">Votre vote</h2><p class="fr-text--sm">' + esc(AIDE_MODE[c.Mode] || AIDE_MODE.Soutien) + '</p>' + controleVote(c, p, r, true) : '') +
       (r ? '<h2 class="fr-h6 fr-mt-3w">Résultat</h2><p><strong>' + esc(scoreTexte(c, r)) + '</strong>' + (rangN ? ' · ' + rangN + '<sup>e</sup> sur ' + res.length : '') + '<br><span class="gd-meta">' + pluriel(r.votants, 'participant') + '</span></p>' +
         (r.details.length > 1 ? '<ul class="gd-criteres">' + r.details.map(function (d) { return '<li>' + esc(d.nom) + ' : ' + (d.moyenne === null ? '–' : arrondi(d.moyenne, 1).toLocaleString('fr-FR')) + '</li>'; }).join('') + '</ul>' : '') : '') +
@@ -848,10 +874,22 @@
   // Un code est utilisé dès qu'un vote reconnu le porte, dans Votes (anciens formulaires) ou dans Votes_publics.
   var FORMULE_UTILISE = "len(Votes.lookupRecords(Bulletin='c:%d' % $id)) + len(" + TABLE_PUBLICS + ".lookupRecords(Bulletin='c:%d' % $id)) > 0";
   function formuleValide(table) {
-    return [
+    var l = [
       "if not $Bulletin or not $Proposition:",
       "  return False",
-      "tous = sorted(" + table + ".lookupRecords(Bulletin=$Bulletin, Consultation=$Consultation), key=lambda r: r.id)",
+      "# La proposition (et le critère) doivent appartenir à la consultation du vote.",
+      "if $Proposition.Consultation != $Consultation or ($Critere and $Critere.Consultation != $Consultation):",
+      "  return False"];
+    if (table !== 'Votes') {
+      l.push("# Vote public : reçu avant la fin du jour d'échéance, et avant le gel des votes (noté à la clôture).",
+        "if not $Envoye_le:",
+        "  return False",
+        "if $Consultation.Echeance and $Envoye_le.date() > $Consultation.Echeance:",
+        "  return False",
+        "if $Consultation.Cloture_vote and $id > $Consultation.Cloture_vote:",
+        "  return False");
+    }
+    l.push("tous = sorted(" + table + ".lookupRecords(Bulletin=$Bulletin, Consultation=$Consultation), key=lambda r: r.id)",
       "premiers = {}",
       "for r in tous:",
       "  cle = (r.Proposition.id, r.Critere.id)",
@@ -870,7 +908,8 @@
       "  return sum(r.Valeur for r in premiers.values() if r.id <= $id) <= budget",
       "if mode == 'Notation':",
       "  return 0 <= $Valeur <= 5",
-      "return $Valeur == 1"].join('\n');
+      "return $Valeur == 1");
+    return l.join('\n');
   }
   var FORMULE_VALIDE = formuleValide('Votes');
   var FORMULE_VALIDE_PUBLIC = formuleValide(TABLE_PUBLICS);
@@ -901,7 +940,8 @@
   function controleAJour() {
     var bu = colonne('Votes', 'Bulletin'), bp = colonne(TABLE_PUBLICS, 'Bulletin'), ut = colonne(TABLE_CODES, 'Utilise');
     return !!(controleInstalle() && colonne('Votes', 'Courriel') && colonne('Consultations', 'Identification') && bu && bu.type === 'Text' && bu.formula === FORMULE_BULLETIN &&
-      bp && bp.formula === FORMULE_BULLETIN_PUBLIC && colonne(TABLE_PUBLICS, 'Valide') && ut && ut.formula === FORMULE_UTILISE);
+      bp && bp.formula === FORMULE_BULLETIN_PUBLIC && ut && ut.formula === FORMULE_UTILISE && colonne('Consultations', 'Cloture_vote') &&
+      (colonne('Votes', 'Valide') || {}).formula === FORMULE_VALIDE && (colonne(TABLE_PUBLICS, 'Valide') || {}).formula === FORMULE_VALIDE_PUBLIC);
   }
   // Un formulaire Grist publié sur la table Votes permet d'y écrire toutes les colonnes, y compris Votant : à signaler.
   function formulairePublieSurVotes() {
@@ -1024,7 +1064,11 @@
     var bu = colonne('Votes', 'Bulletin');
     if (!bu) acts.push(['AddColumn', 'Votes', 'Bulletin', { type: 'Text', isFormula: true, formula: FORMULE_BULLETIN }]);
     else if (bu.type !== 'Text' || bu.formula !== FORMULE_BULLETIN) acts.push(['ModifyColumn', 'Votes', 'Bulletin', { type: 'Text', isFormula: true, formula: FORMULE_BULLETIN }]);
-    if (!colonne('Votes', 'Valide')) acts.push(['AddColumn', 'Votes', 'Valide', { type: 'Bool', isFormula: true, formula: FORMULE_VALIDE }]);
+    // Gel des votes publics à la clôture : numéro du dernier vote public reçu (noté par l'outil, voir gelerVotesPublics).
+    if (!colonne('Consultations', 'Cloture_vote')) acts.push(['AddColumn', 'Consultations', 'Cloture_vote', { type: 'Int', label: 'Cloture_vote' }]);
+    var va = colonne('Votes', 'Valide');
+    if (!va) acts.push(['AddColumn', 'Votes', 'Valide', { type: 'Bool', isFormula: true, formula: FORMULE_VALIDE }]);
+    else if (va.formula !== FORMULE_VALIDE) acts.push(['ModifyColumn', 'Votes', 'Valide', { type: 'Bool', isFormula: true, formula: FORMULE_VALIDE }]);
     // Table du formulaire public : les mêmes colonnes de saisie que Votes, sans Votant.
     if (!tableExiste(TABLE_PUBLICS)) {
       acts.push(['AddTable', TABLE_PUBLICS, [{ id: 'Consultation', type: 'Ref:Consultations' }, { id: 'Proposition', type: 'Ref:Propositions' },

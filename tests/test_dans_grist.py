@@ -149,6 +149,13 @@ with sync_playwright() as p:
              'Votant' not in vp and 'Code' in vp and 'Courriel' in vp and 'Votes_publics.lookupRecords' in vp.get('Valide', {}).get('formula', '') and 'Codes_vote' in vp.get('Bulletin', {}).get('formula', ''))
     verifier('votes publics : un code est « utilisé » aussi par un vote du formulaire public', 'Votes_publics' in d['Codes_vote']['colonnes']['Utilise']['formula'])
     verifier('votes faits dans Grist : reconnus par un numéro, jamais par l\'adresse', "'u:%d' % min(" in d['Votes']['colonnes']['Bulletin']['formula'])
+    fv = vp.get('Valide', {}).get('formula', '')
+    verifier('votes publics : échéance, gel et appartenance contrôlés par Grist', 'Echeance' in fv and 'Cloture_vote' in fv and 'Envoye_le' in fv and '$Proposition.Consultation != $Consultation' in fv)
+    verifier('votes faits dans Grist : appartenance contrôlée, pas de date', '$Proposition.Consultation != $Consultation' in d['Votes']['colonnes']['Valide']['formula'] and 'Envoye_le' not in d['Votes']['colonnes']['Valide']['formula'])
+    pg.wait_for_timeout(500)
+    cons = mock(pg)['tables']['Consultations']['lignes']
+    verifier('gel : les consultations dont le vote est fermé sont gelées, les autres non',
+             'Cloture_vote' in mock(pg)['tables']['Consultations']['colonnes'] and all((x.get('Cloture_vote') == -1) == (x.get('Phase') in ('Close', 'Dépôt seulement')) for x in cons))
     verifier('consigne : le formulaire de vote se publie sur Votes_publics', 'publiez-le sur la table Votes_publics' in f.locator('body').inner_text())
     verifier('niveaux : les cinq niveaux sont proposés', f.locator('#vc-niveau option').count() == 5)
     f.locator('#vc-niveau').select_option('Code commun')

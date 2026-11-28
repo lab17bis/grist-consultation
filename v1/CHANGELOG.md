@@ -2,6 +2,12 @@
 
 Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans retirer ce qui existe.
 
+## 2026-11-28 (échéance et liens par proposition)
+- **Échéance contrôlée par Grist** pour les votes publics : un vote reçu après le jour d'échéance est ignoré ; à la fermeture du vote, l'outil gèle les votes publics (colonne `Consultations.Cloture_vote`) : tout vote plus récent est ignoré, même avec une date falsifiée. Rouvrir le vote retire le gel.
+- Un vote dont la proposition (ou le critère) n'appartient pas à sa consultation est ignoré (votes publics et votes faits dans Grist).
+- Page publique : bouton *Voter* sur chaque proposition (sauf en notation), qui ouvre le formulaire avec la proposition déjà choisie (`pre_Proposition`).
+- Documents existants : *Mettre à jour le contrôle du vote* ajoute `Cloture_vote` et met à jour les formules `Valide`.
+
 ## 2026-11-28 (vote public : table séparée, données protégées)
 - **Correction de sécurité.** Un formulaire Grist publié peut écrire toutes les colonnes de sa table sans que les règles d'accès s'appliquent (limite de Grist, constatée sur grist.numerique.gouv.fr) : publié sur `Votes`, il permettait de voter au nom de n'importe quelle personne en remplissant `Votant`, même au niveau *Compte Grist*. Les votes du formulaire public vont désormais dans une nouvelle table `Votes_publics`, sans colonne `Votant`, avec ses propres colonnes `Bulletin` et `Valide`. L'outil signale un formulaire encore publié sur `Votes`.
 - Les votes faits dans Grist sont reconnus par un numéro (« u: »), jamais par l'adresse du compte, et passent par le même contrôle que les autres (une voix par proposition, plafond de points). Au niveau *Ouvert*, une personne connectée n'est plus comptée comme plusieurs participants. Une adresse de courriel déclarée n'apparaît plus dans `Bulletin`.
