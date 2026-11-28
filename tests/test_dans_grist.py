@@ -149,6 +149,7 @@ with sync_playwright() as p:
              'Votant' not in vp and 'Code' in vp and 'Courriel' in vp and 'Votes_publics.lookupRecords' in vp.get('Valide', {}).get('formula', '') and 'Codes_vote' in vp.get('Bulletin', {}).get('formula', ''))
     verifier('votes publics : un code est « utilisé » aussi par un vote du formulaire public', 'Votes_publics' in d['Codes_vote']['colonnes']['Utilise']['formula'])
     verifier('votes faits dans Grist : reconnus par un numéro, jamais par l\'adresse', "'u:%d' % min(" in d['Votes']['colonnes']['Bulletin']['formula'])
+    verifier('votes publics : les références affichent un titre (choix lisibles dans le formulaire)', bool(vp.get('Proposition', {}).get('visibleCol')) and bool(vp.get('Consultation', {}).get('visibleCol')))
     fv = vp.get('Valide', {}).get('formula', '')
     verifier('votes publics : échéance, gel et appartenance contrôlés par Grist', 'Echeance' in fv and 'Cloture_vote' in fv and 'Envoye_le' in fv and '$Proposition.Consultation != $Consultation' in fv)
     verifier('votes faits dans Grist : appartenance contrôlée, pas de date', '$Proposition.Consultation != $Consultation' in d['Votes']['colonnes']['Valide']['formula'] and 'Envoye_le' not in d['Votes']['colonnes']['Valide']['formula'])

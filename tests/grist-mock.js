@@ -20,7 +20,7 @@
       tables.push({ id: i + 1, tableId: t, summarySourceTable: 0 });
       Object.keys(doc[t].colonnes).forEach(function (c) {
         var d = doc[t].colonnes[c];
-        cols.push({ id: ++n, parentId: i + 1, colId: c, type: d.type || 'Text', label: d.label || c, isFormula: !!d.isFormula, formula: d.formula || '', widgetOptions: d.widgetOptions || '', description: d.description || '', visibleCol: 0 });
+        cols.push({ id: ++n, parentId: i + 1, colId: c, type: d.type || 'Text', label: d.label || c, isFormula: !!d.isFormula, formula: d.formula || '', widgetOptions: d.widgetOptions || '', description: d.description || '', visibleCol: d.visibleCol || 0 });
       });
     });
     function enCol(lignes) { var r = {}; Object.keys(lignes[0] || { id: 0 }).forEach(function (k) { r[k] = lignes.map(function (l) { return l[k]; }); }); return r; }

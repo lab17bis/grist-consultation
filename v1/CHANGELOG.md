@@ -6,6 +6,7 @@ Les adresses `/v1/` ne changent pas : chaque version ajoute ou corrige, sans ret
 - **Échéance contrôlée par Grist** pour les votes publics : un vote reçu après le jour d'échéance est ignoré ; à la fermeture du vote, l'outil gèle les votes publics (colonne `Consultations.Cloture_vote`) : tout vote plus récent est ignoré, même avec une date falsifiée. Rouvrir le vote retire le gel.
 - Un vote dont la proposition (ou le critère) n'appartient pas à sa consultation est ignoré (votes publics et votes faits dans Grist).
 - Page publique : bouton *Voter* sur chaque proposition (sauf en notation), qui ouvre le formulaire avec la proposition déjà choisie (`pre_Proposition`).
+- Correction : les colonnes de référence de `Votes_publics` affichent le titre (consultation, proposition) ou le nom (critère) ; le formulaire de vote proposait des numéros.
 - Documents existants : *Mettre à jour le contrôle du vote* ajoute `Cloture_vote` et met à jour les formules `Valide`.
 
 ## 2026-11-28 (vote public : table séparée, données protégées)

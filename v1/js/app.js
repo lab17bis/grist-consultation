@@ -940,7 +940,7 @@
   function controleAJour() {
     var bu = colonne('Votes', 'Bulletin'), bp = colonne(TABLE_PUBLICS, 'Bulletin'), ut = colonne(TABLE_CODES, 'Utilise');
     return !!(controleInstalle() && colonne('Votes', 'Courriel') && colonne('Consultations', 'Identification') && bu && bu.type === 'Text' && bu.formula === FORMULE_BULLETIN &&
-      bp && bp.formula === FORMULE_BULLETIN_PUBLIC && ut && ut.formula === FORMULE_UTILISE && colonne('Consultations', 'Cloture_vote') &&
+      bp && bp.formula === FORMULE_BULLETIN_PUBLIC && (colonne(TABLE_PUBLICS, 'Proposition') || {}).visibleCol && ut && ut.formula === FORMULE_UTILISE && colonne('Consultations', 'Cloture_vote') &&
       (colonne('Votes', 'Valide') || {}).formula === FORMULE_VALIDE && (colonne(TABLE_PUBLICS, 'Valide') || {}).formula === FORMULE_VALIDE_PUBLIC);
   }
   // Un formulaire Grist publié sur la table Votes permet d'y écrire toutes les colonnes, y compris Votant : à signaler.
@@ -959,7 +959,7 @@
       '<ul class="fr-text--sm">' + NIVEAUX.map(function (n) { return '<li><strong>' + esc(n.titre) + '</strong> : ' + esc(n.resume) + ' ' + esc(n.pourquoi) + ' <em>Limite : ' + esc(n.limite) + '</em></li>'; }).join('') + '</ul>';
     if (DEMO) return h + '<p class="fr-text--sm">Disponible dans Grist, par un propriétaire du document.</p>';
     if (!controleInstalle() || !controleAJour()) {
-      return h + '<p class="fr-text--sm">' + (controleInstalle() ? 'Mise à jour nécessaire : ajoute la table <code>' + TABLE_PUBLICS + '</code> (votes du formulaire public), les colonnes qui manquent et remplace les formules de <code>Bulletin</code>. Les votes faits dans Grist sont désormais reconnus par un numéro, jamais par l\'adresse du compte.' : 'Ajoute la table <code>' + TABLE_CODES + '</code>, la table <code>' + TABLE_PUBLICS + '</code> (votes du formulaire public), la colonne <code>Identification</code> à la table Consultations et les colonnes <code>Code</code>, <code>Courriel</code>, <code>Bulletin</code> et <code>Valide</code> à la table Votes.') +
+      return h + '<p class="fr-text--sm">' + (controleInstalle() ? 'Mise à jour nécessaire : ajoute ce qui manque (table <code>' + TABLE_PUBLICS + '</code> des votes du formulaire public, colonne <code>Cloture_vote</code>) et met à jour les formules <code>Bulletin</code> et <code>Valide</code> (échéance, gel à la clôture, votes faits dans Grist reconnus par un numéro).' : 'Ajoute la table <code>' + TABLE_CODES + '</code>, la table <code>' + TABLE_PUBLICS + '</code> (votes du formulaire public), la colonne <code>Identification</code> à la table Consultations et les colonnes <code>Code</code>, <code>Courriel</code>, <code>Bulletin</code> et <code>Valide</code> à la table Votes.') +
         ' Les données existantes ne sont pas modifiées. À faire par un propriétaire du document.</p>' +
         '<button type="button" class="fr-btn fr-btn--secondary" data-vc="activer">' + (controleInstalle() ? 'Mettre à jour le contrôle du vote' : 'Activer le contrôle du vote') + '</button>';
     }
@@ -1087,9 +1087,23 @@
     grist.docApi.applyUserActions(acts).then(function () {
       return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
+        var aff = actionsAffichageRefs();
+        return aff.length ? grist.docApi.applyUserActions(aff) : null;
       });
     }).then(function () { aclDonnees = null; return poserRegles(); }).then(function () { return rafraichirVC('Contrôle du vote activé. La table ' + TABLE_CODES + ' est réservée aux propriétaires (Réglages › Données).'); })
       .catch(function (err) { vc.message = 'Activation refusée par Grist : seuls les propriétaires du document le peuvent. (' + ((err && err.message) || err) + ')'; b.disabled = false; redessinerReglages(); });
+  }
+  // Les références affichent le titre (ou le nom) plutôt qu'un numéro : dans Grist, et dans le formulaire de vote public,
+  // qui propose les choix avec ce libellé.
+  function actionsAffichageRefs() {
+    var aff = [];
+    [['Propositions', 'Consultation', 'Consultations', 'Titre'], ['Criteres', 'Consultation', 'Consultations', 'Titre'], ['Votes', 'Consultation', 'Consultations', 'Titre'],
+      ['Votes', 'Proposition', 'Propositions', 'Titre'], ['Votes', 'Critere', 'Criteres', 'Nom'], [TABLE_PUBLICS, 'Consultation', 'Consultations', 'Titre'],
+      [TABLE_PUBLICS, 'Proposition', 'Propositions', 'Titre'], [TABLE_PUBLICS, 'Critere', 'Criteres', 'Nom']].forEach(function (r) {
+      var c = colonne(r[0], r[1]), v = colonne(r[2], r[3]);
+      if (c && v && !c.visibleCol) { aff.push(['ModifyColumn', r[0], r[1], { visibleCol: v.id }]); aff.push(['SetDisplayFormula', r[0], null, c.id, '$' + r[1] + '.' + r[3]]); }
+    });
+    return aff;
   }
   function changerNiveau(valeur) {
     var cid = vc.consultation; if (!cid) return;
@@ -1406,12 +1420,7 @@
     return grist.docApi.applyUserActions(actions).then(function () {
       return Promise.all([grist.docApi.fetchTable('_grist_Tables'), grist.docApi.fetchTable('_grist_Tables_column')]).then(function (m) {
         meta.tables = lignesDepuisColonnes(m[0]); meta.colonnes = lignesDepuisColonnes(m[1]);
-        var aff = [];
-        [['Propositions', 'Consultation', 'Consultations', 'Titre'], ['Criteres', 'Consultation', 'Consultations', 'Titre'], ['Votes', 'Consultation', 'Consultations', 'Titre'],
-          ['Votes', 'Proposition', 'Propositions', 'Titre'], ['Votes', 'Critere', 'Criteres', 'Nom']].forEach(function (r) {
-          var c = colonne(r[0], r[1]), v = colonne(r[2], r[3]);
-          if (c && v && !c.visibleCol) { aff.push(['ModifyColumn', r[0], r[1], { visibleCol: v.id }]); aff.push(['SetDisplayFormula', r[0], null, c.id, '$' + r[1] + '.' + r[3]]); }
-        });
+        var aff = actionsAffichageRefs();
         return aff.length ? grist.docApi.applyUserActions(aff) : null;
       });
     }).then(function () {
